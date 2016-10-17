@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "express": "^4.14.0",
+    "pm2": "^2.0.18"
+  },
+  "scripts": {
+    "start": "pm2 start server.js"
+  }
+}
