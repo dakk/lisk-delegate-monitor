@@ -1,7 +1,11 @@
 {
   "dependencies": {
+    "ejs": "^2.5.2",
     "express": "^4.14.0",
-    "pm2": "^2.0.18"
+    "jade": "^1.11.0",
+    "morgan": "^1.7.0",
+    "pm2": "^2.0.18",
+    "request": "^2.75.0"
   },
   "scripts": {
     "start": "pm2 start server.js"
