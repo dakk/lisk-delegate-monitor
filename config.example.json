@@ -1,8 +1,7 @@
 {
-	"node": "46.16.190.190:9305",
+	"node": "192.168.1.1:9305",
 	"lobby": [
-		"davideg",
-		"ondin"
+		"davideg"
 	],
 	"donate": "7725849364280821971S (davideg)"
 }
