@@ -164,7 +164,7 @@ bot.onText(/\/table/, function (msg) {
 	}
 	str += "\nOutsiders:\n";
 	for (var i = 0; i < outsideList.length; i++) {
-		var d = delegateList[i];
+		var d = outsideList[i];
 		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
 	}
 
