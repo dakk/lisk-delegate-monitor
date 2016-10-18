@@ -8,7 +8,22 @@ html
 		include ./includes/footer.jade
 
 		script.
-			$("#stats").load("/stats");
+			var getUrlParameter = function getUrlParameter(sParam) {
+				var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+					sURLVariables = sPageURL.split('&'),
+					sParameterName,
+					i;
+
+				for (i = 0; i < sURLVariables.length; i++) {
+					sParameterName = sURLVariables[i].split('=');
+
+					if (sParameterName[0] === sParam) {
+						return sParameterName[1] === undefined ? true : sParameterName[1];
+					}
+				}
+			};
+
+			$("#stats").load("/stats?key=" + getUrlParameter ('key'));
 			setTimeout (function () {
-				$("#stats").load("/stats");
+				$("#stats").load("/stats?key=" + getUrlParameter ('key'));
 			}, 10000);

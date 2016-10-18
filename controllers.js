@@ -7,6 +7,7 @@ var config      = require ('./config.json');
 
 
 var delegateList = [];
+var outsideList = [];
 var stats = {
 	delegates: 0,
 	mined: 0,
@@ -17,6 +18,7 @@ var alive = {};
 
 exports.update = function () {
 	log.debug ('Data', 'Updating data...');
+
 	request('http://' + config.node + '/api/delegates/?limit=101&offset=0&orderBy=rate:asc', function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			var data = JSON.parse(body);
@@ -58,15 +60,31 @@ exports.update = function () {
 									stats2.notalive += 1;
 									alive [delegateList2[i].address] = false;
 									for (var z = 0; z < config.telegram.chatids; z ++)
-										bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" is in red state.');
+										bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
 								}
 							}
 						}
 
-						delegateList = delegateList2;
-						stats = stats2;
+						request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', function (error, response, body) {
+							if (!error && response.statusCode == 200) {
+								var data = JSON.parse(body);
+								var outsideList2 = [];
 
-						log.debug ('Data', 'Data updated.');
+								for (var i = 0; i < data.delegates.length; i++) {
+									if (config.lobby.indexOf (data.delegates[i].username) != -1) {
+										data.delegates[i].state = 2;
+										stats2.mined += data.delegates[i].producedblocks;
+										outsideList2.push (data.delegates[i]);
+									}
+								}
+								outsideList = outsideList2;
+								stats2.outsides = outsideList.length;
+								delegateList = delegateList2;
+								stats = stats2;
+
+								log.debug ('Data', 'Data updated.');
+							}
+						});
 					});
 				}
 			});			
@@ -85,6 +103,14 @@ exports.updateBalances = function () {
 			}
 		});
 	}
+	for (var i = 0; i < outsideList.length; i++) {
+		request ('http://' + config.node + '/api/accounts?address=' + outsideList[i].address, function (error, response, body) {
+			if (!error && response.statusCode == 200) {
+				var data = JSON.parse(body);
+				balances [data.account.address] = data.account.balance / 100000000;
+			}
+		});
+	}
 };
 
 
@@ -92,7 +118,10 @@ exports.updateBalances = function () {
 var router 		= express.Router();
 
 var checkLogin = function (req, res, next) {
-	next ();
+	if ('key' in req.query && req.query.key == config.accesskey)
+		next ();
+	else
+		res.status(500);
 };
 
 router.get('/', checkLogin, function (req, res) {
@@ -100,7 +129,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { delegates: delegateList, stats: stats, balances: balances, alive: alive });
+	res.render ('stats', { delegates: delegateList, stats: stats, balances: balances, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;
@@ -115,6 +144,11 @@ bot.onText(/\/help/, function (msg) {
 	bot.sendMessage(fromId, 'Type /stats /table /reds');
 });
 
+bot.onText(/\/start/, function (msg) {
+	var fromId = msg.from.id;
+	bot.sendMessage(fromId, 'Type /stats /table /reds');
+});
+
 bot.onText(/\/stats/, function (msg) {
 	var fromId = msg.from.id;
 	bot.sendMessage(fromId, 'Delegates: ' + stats.delegates + ', Mined blocks: ' + stats.mined + ', Total shifts: ' + stats.shift + ', Red delegates: ' + stats.notalive);
@@ -125,6 +159,11 @@ bot.onText(/\/table/, function (msg) {
 
 	var str = "";
 	for (var i = 0; i < delegateList.length; i++) {
+		var d = delegateList[i];
+		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
+	}
+	str += "\nOutsiders:\n";
+	for (var i = 0; i < outsideList.length; i++) {
 		var d = delegateList[i];
 		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
 	}

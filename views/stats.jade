@@ -9,6 +9,9 @@ div.row
 									span Delegates
 									br
 									span= stats.delegates
+									span &nbsp;(
+									span= stats.outsides
+									span &nbsp; outside)
 
 				div.col-md-3
 					div.panel.panel-info
@@ -70,3 +73,19 @@ table.table.table-striped.table-condensed.table-hover
 								span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
 							else
 								span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
+
+
+				each d in outsides
+					tr
+						td= d.rate
+						td= d.username
+						td= d.productivity
+						td= d.approval
+						td
+							span= d.producedblocks
+							span &nbsp;(
+							span= d.missedblocks
+							span )
+						td= balances[d.address]
+						td
+							span(style="color: #f39c12").glyphicon.text-primary.glyphicon-minus-sign
