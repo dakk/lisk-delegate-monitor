@@ -1,5 +1,6 @@
 var express		= require ('express');
 var request     = require ('request');
+var async		= require ('async');
 var TelegramBot = require('node-telegram-bot-api');
 
 var log			= require ('./log');
@@ -15,6 +16,7 @@ var stats = {
 };
 var balances = {};
 var alive = {};
+var votes = [];
 
 exports.update = function () {
 	log.debug ('Data', 'Updating data...');
@@ -93,6 +95,47 @@ exports.update = function () {
 };
 
 
+exports.updateVotes = function () {
+	log.debug ('Data', 'Updating votes data...');
+	var votes2 = [];
+
+	/* First row is the username row */
+	var row = ['//'];
+	for (var i = 0; i < delegateList.length; i++) {
+		row.push (delegateList[i].username);
+	}
+	votes2.push ([row]);
+
+	var calls = [];
+	async.each(delegateList, function (d, callback) {
+		calls.push (function (callback) {
+			request ('http://' + config.node + '/api/accounts/delegates/?address=' + d.address, function (error, response, body) {
+				var rrow = [d.username];
+				if (!error && response.statusCode == 200) {
+					var data = JSON.parse(body);
+
+					for (var j = 0; j < delegateList.length; j++) {
+						var r = false;
+						for (var z = 0; z < data.delegates.length; z++) {
+							if (data.delegates[z].address == delegateList[j].address) {
+								r = true;
+								break;
+							}		
+						}
+						rrow.push (r);
+					}
+				}
+				callback (null, rrow);
+			});
+		});
+	});
+
+	async.parallel(calls, function(err, row2) {
+		votes2.push (row2);
+	});
+	votes = votes2;
+};
+
 exports.updateBalances = function () {
 	log.debug ('Data', 'Updating balance data...');
 	for (var i = 0; i < delegateList.length; i++) {
@@ -129,7 +172,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { delegates: delegateList, stats: stats, balances: balances, alive: alive, outsides: outsideList });
+	res.render ('stats', { delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

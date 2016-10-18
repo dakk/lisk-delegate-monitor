@@ -89,3 +89,20 @@ table.table.table-striped.table-condensed.table-hover
 						td= balances[d.address]
 						td
 							span(style="color: #f39c12").glyphicon.text-primary.glyphicon-minus-sign
+
+hr
+h2 Votes
+
+table.table.table-striped.table-condensed.table-hover
+	each vrow in votes
+		each r1 in vrow
+			tr
+				each cell in r1
+					td(align="center")
+						if cell == true
+							span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
+						if cell == false
+							span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
+						if cell != false && cell != true
+							span= cell
+							

@@ -16,6 +16,8 @@ controllers.update ();
 setInterval (controllers.update, 10000);
 setTimeout (controllers.updateBalances, 5000);
 setInterval (controllers.updateBalances, 60000);
+setTimeout (controllers.updateVotes, 3000);
+setInterval (controllers.updateVotes, 5000);
 
 
 /* Server */
