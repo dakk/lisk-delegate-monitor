@@ -57,6 +57,8 @@ exports.update = function () {
 								if (! (delegateList2[i].address in alive)) {
 									stats2.notalive += 1;
 									alive [delegateList2[i].address] = false;
+									for (var z = 0; z < config.telegram.chatids; z ++)
+										bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" is in red state.');
 								}
 							}
 						}
@@ -67,12 +69,7 @@ exports.update = function () {
 						log.debug ('Data', 'Data updated.');
 					});
 				}
-			});
-		
-
-			//http://46.16.190.190:9305/api/peers?limit=100&offset=0&state=1
-
-			
+			});			
 		}
 	});
 };
@@ -112,7 +109,25 @@ exports.router = router;
 /** Telegram bot */
 var bot = new TelegramBot (config.telegram.token, {polling: true});
 
-bot.on('message', function (msg) {
-  var chatId = msg.chat.id;
-  console.log (msg);
+
+bot.onText(/\/help/, function (msg) {
+	var fromId = msg.from.id;
+	bot.sendMessage(fromId, 'Type /stats /table /reds');
+});
+
+bot.onText(/\/stats/, function (msg) {
+	var fromId = msg.from.id;
+	bot.sendMessage(fromId, 'Delegates: ' + stats.delegates + ', Mined blocks: ' + stats.mined + ', Total shifts: ' + stats.shift + ', Red delegates: ' + stats.notalive);
+});
+
+bot.onText(/\/table/, function (msg) {
+	var fromId = msg.from.id;
+
+	var str = "";
+	for (var i = 0; i < delegateList.length; i++) {
+		var d = delegateList[i];
+		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
+	}
+
+	bot.sendMessage(fromId, str);
 });
