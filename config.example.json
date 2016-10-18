@@ -1,8 +1,5 @@
 {
 	"port": 9090,
 	"node": "192.168.1.1:9305",
-	"lobby": [
-		"davideg"
-	],
-	"donate": "7725849364280821971S (davideg)"
+	"lobby": [ "davideg", "tizio" ]
 }
