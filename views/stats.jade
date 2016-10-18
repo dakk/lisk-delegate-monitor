@@ -1,0 +1,72 @@
+div.row
+				div.col-md-3
+					div.panel.panel-success
+						div.panel-heading
+							div.row
+								div.col-md-4
+									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-user
+								div.col-md-8
+									span Delegates
+									br
+									span= stats.delegates
+
+				div.col-md-3
+					div.panel.panel-info
+						div.panel-heading
+							div.row
+								div.col-md-4
+									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-book
+								div.col-md-8
+									span Mined
+									br
+									span= stats.mined
+
+				div.col-md-3
+					div.panel.panel-warning
+						div.panel-heading
+							div.row
+								div.col-md-4
+									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-plus
+								div.col-md-8
+									span Shift sum
+									br
+									span= stats.shift
+
+				div.col-md-3
+					div.panel.panel-danger
+						div.panel-heading
+							div.row
+								div.col-md-4
+									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-alert
+								div.col-md-8
+									span Red state
+									br
+									span= stats.notalive
+
+table.table.table-striped.table-condensed.table-hover
+				tr
+					th Rank
+					th Username
+					th Productivity
+					th Approval
+					th Mined (missed)
+					th Balance
+					th Status
+
+				each d in delegates
+					tr
+						td= d.rate
+						td= d.username
+						td= d.productivity
+						td= d.approval
+						td
+							span= d.producedblocks
+							span &nbsp;(
+							span= d.missedblocks
+							span )
+						td= balances[d.address]
+						td
+							if alive[d.address] == true
+								span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
+							else
+								span(style="color: #990000").glyphicon.text-primary.glyphicon-remove

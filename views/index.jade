@@ -2,51 +2,13 @@ html
 	include ./includes/head.jade
 	body
 		include ./includes/nav.jade
-		div.container
-			div.row
-				div.col-md-3
-					div.panel.panel-success
-						div.panel-heading 
-							span Delegates
-							br
-							span= stats.delegates
-
-				div.col-md-3
-					div.panel.panel-info
-						div.panel-heading 
-							span Mined
-							br
-							span= stats.mined
-
-				div.col-md-3
-					div.panel.panel-warning
-						div.panel-heading 
-							span Shift sum
-							br
-							span= stats.shift
-
-			table.table.table-striped.table-condensed.table-hover
-				tr
-					th Rank
-					th Username
-					th Productivity
-					th Approval
-					th Mined (missed)
-					th Balance
-					th Status
-
-				each d in delegates
-					tr
-						td= d.rate
-						td= d.username
-						td= d.productivity
-						td= d.approval
-						td
-							span= d.producedblocks
-							span &nbsp;(
-							span= d.missedblocks
-							span )
-						td= balances[d.address]
-						td Alive
+		div.container(id="stats")
+			span Loading...
 
 		include ./includes/footer.jade
+
+		script.
+			$("#stats").load("/stats");
+			setTimeout (function () {
+				$("#stats").load("/stats");
+			}, 10000);
