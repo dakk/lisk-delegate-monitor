@@ -24,9 +24,7 @@ var alerted = {};
 var delegatemonitor = {};
 
 var saveDelegateMonitor = function () {
-	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), function (err,data) {
-
-	});
+	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), function (err,data) {});
 };
 var loadDelegateMonitor = function () {
 	try {
