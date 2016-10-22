@@ -1,12 +1,11 @@
 var express		= require ('express');
 var request     = require ('request');
-var async		= require ('async');
 var TelegramBot = require('node-telegram-bot-api');
 var fs 			= require('fs');
 
 var log			= require ('./log');
 var config      = require ('./config.json');
-
+var utils		= require ('./utils');
 
 var delegateList = [];
 var outsideList = [];
@@ -132,12 +131,18 @@ bot.onText(/\/table/, function (msg) {
 exports.update = function () {
 	log.debug ('Data', 'Updating data...');
 
-	request('http://' + config.node + '/api/delegates/?limit=101&offset=0&orderBy=rate:asc', function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			var data = JSON.parse(body);
+	var delegateList2 = [];
+	var stats2 = { delegates: 0, mined: 0, shift: 0 };
 
-			var delegateList2 = [];
-			var stats2 = { delegates: 0, mined: 0, shift: 0 };
+	utils.waterfall([
+		function (next) {
+			request('http://' + config.node + '/api/delegates/?limit=101&offset=0&orderBy=rate:asc', next);
+		},
+		function (error, response, body, next) {
+			if (error || response.statusCode != 200)
+				return log.critical ('Data', 'Failed to download delegate list from node.');
+
+			var data = JSON.parse(body);
 
 	   		for (var i = 0; i < data.delegates.length; i++) {
 				if (config.lobby.indexOf (data.delegates[i].username) != -1) {
@@ -152,77 +157,81 @@ exports.update = function () {
 				stats2.shift += Math.floor (balances[d]);
 			}
 
+			request('http://' + config.node + '/api/blocks?limit=100&orderBy=height:desc', next);
+		},
+		function (error, response, body, next) {
+			if (error || response.statusCode != 200)
+				return log.critical ('Data', 'Failed to download block list from node.');
 
+			var data = JSON.parse(body);
+			request('http://' + config.node + '/api/blocks?limit=100&offset=100&orderBy=height:desc', next.bind (null, data));
+		},
+		function (data, error, response, body, next) {
+			if (error || response.statusCode != 200)
+				return log.critical ('Data', 'Failed to download block list from node.');
 
-			request('http://' + config.node + '/api/blocks?limit=100&orderBy=height:desc', function (err, response, body) {
-				if (!error && response.statusCode == 200) {
-					var data = JSON.parse(body);
+			var data2 = JSON.parse(body);
+			data.blocks = data.blocks.concat (data2.blocks);
 
-					request('http://' + config.node + '/api/blocks?limit=100&offset=100&orderBy=height:desc', function (err, response, body) {
-						if (!error && response.statusCode == 200) {
-							var data2 = JSON.parse(body);
-							data.blocks = data.blocks.concat (data2.blocks);
+			alive = {};
+			for (var i = 0; i < data.blocks.length; i++) {
+				alive [data.blocks[i].generatorId] = true;
+			}
+			
+			stats2.notalive = 0;
+			for (var i = 0; i < delegateList2.length; i++) {
+				if (! (delegateList2[i].address in alive)) {
+					stats2.notalive += 1;
+					alive [delegateList2[i].address] = false;
 
-							alive = {};
-							for (var i = 0; i < data.blocks.length; i++) {
-								alive [data.blocks[i].generatorId] = true;
-							}
-							stats2.notalive = 0;
-							for (var i = 0; i < delegateList2.length; i++) {
-								if (! (delegateList2[i].address in alive)) {
-									stats2.notalive += 1;
-									alive [delegateList2[i].address] = false;
+					if (! (delegateList2[i].address in alerted))
+						alerted [delegateList2[i].address] = 1;
+					else
+						alerted [delegateList2[i].address] += 1;
 
-									if (! (delegateList2[i].address in alerted))
-										alerted [delegateList2[i].address] = 1;
-									else
-										alerted [delegateList2[i].address] += 1;
+					/* Alert the first time and every 30 minutes */
+					if (alerted [delegateList2[i].address] == 1 || alerted [delegateList2[i].address] % 180 == 0) {
+						log.critical ('Monitor', 'Red state for: ' + delegateList2[i].username);
 
-									/* Alert the first time and every 30 minutes */
-									if (alerted [delegateList2[i].address] == 1 || alerted [delegateList2[i].address] % 180 == 0) {
-										log.critical ('Monitor', 'Red state for: ' + delegateList2[i].username);
+						/* Avvisa i canali registrati */
+						for (var z = 0; z < config.telegram.chatids.length; z++)
+							bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
 
-										/* Avvisa i canali registrati */
-										for (var z = 0; z < config.telegram.chatids.length; z++)
-											bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
-
-										/* Avvisa gli utenti registrati */
-										if (delegateList2[i].username in delegateMonitor) {
-											for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
-												bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
-										}
-									}
-								} else {
-									delete alerted [delegateList2[i].address];
-								}
-							}
+						/* Avvisa gli utenti registrati */
+						if (delegateList2[i].username in delegateMonitor) {
+							for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
+								bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
 						}
-
-						request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', function (error, response, body) {
-							if (!error && response.statusCode == 200) {
-								var data = JSON.parse(body);
-								var outsideList2 = [];
-
-								for (var i = 0; i < data.delegates.length; i++) {
-									if (config.lobby.indexOf (data.delegates[i].username) != -1) {
-										data.delegates[i].state = 2;
-										stats2.mined += data.delegates[i].producedblocks;
-										outsideList2.push (data.delegates[i]);
-									}
-								}
-								outsideList = outsideList2;
-								stats2.outsides = outsideList.length;
-								delegateList = delegateList2;
-								stats = stats2;
-
-								log.debug ('Data', 'Data updated.');
-							}
-						});
-					});
+					}
+				} else {
+					delete alerted [delegateList2[i].address];
 				}
-			});			
+			}
+
+			request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', next);
+		},
+		function (error, response, body) {
+			if (error || response.statusCode != 200) 
+				return log.critical ('Data', 'Failed to download outsider list from node.');
+
+			var data = JSON.parse(body);
+			var outsideList2 = [];
+
+			for (var i = 0; i < data.delegates.length; i++) {
+				if (config.lobby.indexOf (data.delegates[i].username) != -1) {
+					data.delegates[i].state = 2;
+					stats2.mined += data.delegates[i].producedblocks;
+					outsideList2.push (data.delegates[i]);
+				}
+			}
+			outsideList = outsideList2;
+			stats2.outsides = outsideList.length;
+			delegateList = delegateList2;
+			stats = stats2;
+
+			log.debug ('Data', 'Data updated.');
 		}
-	});
+	]);
 };
 
 
@@ -235,36 +244,47 @@ exports.updateVotes = function () {
 	for (var i = 0; i < delegateList.length; i++) {
 		row.push (delegateList[i].username);
 	}
-	votes2.push ([row]);
+	votes2.push (row);
 
-	var calls = [];
-	async.each(delegateList, function (d, callback) {
-		calls.push (function (callback) {
+
+	utils.waterfall ([
+		function (next) {
+			next (0, next);
+		},
+		function (i, current, next) {
+			if (i >= delegateList.length)
+				return next ();
+
+			var d = delegateList[i];
+			
 			request ('http://' + config.node + '/api/accounts/delegates/?address=' + d.address, function (error, response, body) {
 				var rrow = [d.username];
-				if (!error && response.statusCode == 200) {
-					var data = JSON.parse(body);
 
-					for (var j = 0; j < delegateList.length; j++) {
-						var r = false;
-						for (var z = 0; z < data.delegates.length; z++) {
-							if (data.delegates[z].address == delegateList[j].address) {
-								r = true;
-								break;
-							}		
-						}
-						rrow.push (r);
+				if (error || response.statusCode != 200)
+					return current (i+1, current);
+
+				var data = JSON.parse(body);
+
+				for (var j = 0; j < delegateList.length; j++) {
+					var r = false;
+					for (var z = 0; z < data.delegates.length; z++) {
+						if (data.delegates[z].address == delegateList[j].address) {
+							r = true;
+							break;
+						}		
 					}
+					rrow.push (r);
 				}
-				callback (null, rrow);
-			});
-		});
-	});
 
-	async.parallel(calls, function(err, row2) {
-		votes2.push (row2);
-	});
-	votes = votes2;
+				votes2.push (rrow);
+				return current (i+1, current);
+			});
+		},
+		function () {
+			votes = votes2;
+			log.debug ('Data', 'Votes updated.');
+		}
+	]);
 };
 
 exports.updateBalances = function () {
