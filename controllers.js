@@ -2,6 +2,7 @@ var express		= require ('express');
 var request     = require ('request');
 var async		= require ('async');
 var TelegramBot = require('node-telegram-bot-api');
+var fs 			= require('fs');
 
 var log			= require ('./log');
 var config      = require ('./config.json');
@@ -20,20 +21,88 @@ var votes = [];
 var alerted = {};
 
 
+/* Delegate monitor for PVT monitoring */
+var delegatemonitor = {};
+
+var saveDelegateMonitor = function () {
+	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), function (err,data) {
+
+	});
+};
+var loadDelegateMonitor = function () {
+	try {
+		return JSON.parse (fs.readFileSync('monitor.json', 'utf8'));
+	} catch (e) {
+		return {};
+	}
+};
+
+delegateMonitor = loadDelegateMonitor ();
+
 
 
 /** Telegram bot */
 var bot = new TelegramBot (config.telegram.token, {polling: true});
-
+var botHelp = 'Type:\n\t/stats\n\t/table\n\t/reds\n\t/watch delegatename\n\t/unwatch delegatename\n\t/watched';
 
 bot.onText(/\/help/, function (msg) {
 	var fromId = msg.from.id;
-	bot.sendMessage(fromId, 'Type /stats /table /reds');
+	bot.sendMessage(fromId, botHelp);
 });
 
 bot.onText(/\/start/, function (msg) {
 	var fromId = msg.from.id;
-	bot.sendMessage(fromId, 'Type /stats /table /reds');
+	bot.sendMessage(fromId, botHelp);
+});
+
+bot.onText(/\/watch (.+)/, function (msg, match) {
+  var fromId = msg.from.id;
+  var delegate = match[1];
+
+  if (config.lobby.indexOf (delegate) == -1) {
+	  bot.sendMessage(fromId, 'Delegate ' + delegate + ' is not part of the lobby.');
+	  return;
+  }
+
+  if (! (delegate in delegateMonitor))
+  	delegateMonitor [delegate] = [fromId];
+  else
+  	delegateMonitor [delegate].push (fromId);
+
+  saveDelegateMonitor ();
+  log.debug ('Monitor', 'New watcher for: ' + delegate);
+
+  bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now enabled. You will receive a private message in case of red state.');
+});
+
+
+bot.onText(/\/unwatch (.+)/, function (msg, match) {
+  var fromId = msg.from.id;
+  var delegate = match[1];
+
+  if (delegate in delegateMonitor) {
+	  var i = delegateMonitor[delegate].indexOf (fromId);
+	  if (i != -1) {
+		  delegateMonitor[delegate].splice (i, 1);
+		  saveDelegateMonitor ();
+	  }
+  }
+  log.debug ('Monitor', 'Removed watcher for: ' + delegate);
+
+  bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now disabled.');
+});
+
+
+bot.onText(/\/watched/, function (msg) {
+	var fromId = msg.from.id;
+	
+	var message = "You are monitoring:\n";
+	for (var d in delegateMonitor) {
+		if (delegateMonitor[d].indexOf (fromId) != -1)
+			message += '   ' + d + '\n';
+	}
+	
+	bot.sendMessage(fromId, message);
 });
 
 bot.onText(/\/stats/, function (msg) {
@@ -111,8 +180,17 @@ exports.update = function () {
 
 									/* Alert the first time and every 30 minutes */
 									if (alerted [delegateList2[i].address] == 1 || alerted [delegateList2[i].address] % 180 == 0) {
+										log.critical ('Monitor', 'Red state for: ' + delegateList2[i].username);
+
+										/* Avvisa i canali registrati */
 										for (var z = 0; z < config.telegram.chatids.length; z++)
 											bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+
+										/* Avvisa gli utenti registrati */
+										if (delegateList2[i].username in delegateMonitor) {
+											for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
+												bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+										}
 									}
 								} else {
 									delete alerted [delegateList2[i].address];
