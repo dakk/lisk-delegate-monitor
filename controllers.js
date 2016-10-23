@@ -21,7 +21,7 @@ var alerted = {};
 
 
 /* Delegate monitor for PVT monitoring */
-var delegatemonitor = {};
+var delegateMonitor = {};
 
 var saveDelegateMonitor = function () {
 	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), function (err,data) {});
