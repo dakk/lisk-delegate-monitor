@@ -1,4 +1,8 @@
 {
+  "name": "shift-lobby",
+  "version": "0.5.2",
+  "description": "web platform and Telegram bot for Shift lobbies",
+  "main": "server.js",
   "dependencies": {
     "colors": "^1.1.2",
     "ejs": "^2.5.2",
@@ -7,9 +11,16 @@
     "morgan": "^1.7.0",
     "node-telegram-bot-api": "^0.24.0",
     "pm2": "^2.0.18",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+    "waterfall-ya": "^0.7.1"
   },
   "scripts": {
     "start": "pm2 start server.js"
-  }
+  },
+  "author": "Davide Gessa (dakk)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/dakk/shift-lobby/issues"
+  },
+  "homepage": "https://github.com/dakk/shift-lobby#readme"
 }

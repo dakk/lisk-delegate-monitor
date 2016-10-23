@@ -1,11 +1,11 @@
 var express		= require ('express');
 var request     = require ('request');
-var TelegramBot = require('node-telegram-bot-api');
-var fs 			= require('fs');
+var TelegramBot = require ('node-telegram-bot-api');
+var fs 			= require ('fs');
+var waterfall	= require ('waterfall-ya');
 
 var log			= require ('./log');
 var config      = require ('./config.json');
-var utils		= require ('./utils');
 
 var delegateList = [];
 var outsideList = [];
@@ -132,7 +132,7 @@ exports.update = function () {
 	var delegateList2 = [];
 	var stats2 = { delegates: 0, mined: 0, shift: 0 };
 
-	utils.waterfall([
+	waterfall([
 		function (next) {
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=0&orderBy=rate:asc', next);
 		},
@@ -245,7 +245,7 @@ exports.updateVotes = function () {
 	votes2.push (row);
 
 
-	utils.waterfall ([
+	waterfall ([
 		function (next) {
 			next (0, next);
 		},
