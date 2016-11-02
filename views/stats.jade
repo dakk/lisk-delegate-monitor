@@ -89,6 +89,17 @@ table.table.table-striped.table-condensed.table-hover
 						td= balances[d.address]
 						td
 							span(style="color: #f39c12").glyphicon.text-primary.glyphicon-minus-sign
+							
+				each addr in addresses
+					tr
+						td &nbsp;
+						td= addr
+						td &nbsp;
+						td &nbsp;
+						td &nbsp;
+						td= balances[addr]
+						td
+							span(style="color: #3498db").glyphicon.text-primary.glyphicon-eye-open
 
 hr
 h2 Votes

@@ -9,6 +9,7 @@ var config      = require ('./config.json');
 
 var delegateList = [];
 var outsideList = [];
+
 var stats = {
 	delegates: 0,
 	mined: 0,
@@ -152,7 +153,7 @@ exports.update = function () {
 			}
 
 			for (var d in balances) {
-				stats2.shift += Math.floor (balances[d]);
+				stats2.shift += Math.floor (balances[d] * 10) / 10;
 			}
 
 			request('http://' + config.node + '/api/blocks?limit=100&orderBy=height:desc', next);
@@ -303,6 +304,14 @@ exports.updateBalances = function () {
 			}
 		});
 	}
+	for (var i = 0; i < config.addresses.length; i++) {
+		request ('http://' + config.node + '/api/accounts?address=' + config.addresses[i], function (error, response, body) {
+			if (!error && response.statusCode == 200) {
+				var data = JSON.parse(body);
+				balances [data.account.address] = data.account.balance / 100000000;
+			}
+		});
+	}
 };
 
 
@@ -321,7 +330,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

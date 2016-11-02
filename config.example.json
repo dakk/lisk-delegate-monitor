@@ -10,5 +10,6 @@
 		}
 	},
 	"accesskey": "lobbykey",
-	"lobby": [ "davideg", "tizio" ]
+	"lobby": [ "davideg", "tizio" ],
+	"addresses": ["1513660116340715009S"]
 }
