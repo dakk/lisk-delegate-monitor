@@ -5,7 +5,12 @@ var fs 			= require ('fs');
 var waterfall	= require ('waterfall-ya');
 
 var log			= require ('./log');
-var config      = require ('./config.json');
+
+if (process.argv.length >= 3)
+	var config      = require ('./' + process.argv[2]);
+else
+	var config      = require ('./config.json');
+
 
 var delegateList = [];
 var outsideList = [];
@@ -326,11 +331,11 @@ var checkLogin = function (req, res, next) {
 };
 
 router.get('/', checkLogin, function (req, res) {
-	res.render ('index', { }); 
+	res.render ('index', { coin: config.coin }); 
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

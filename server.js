@@ -1,5 +1,11 @@
+
 var controllers = require ('./controllers');
-var config      = require ('./config.json');
+
+if (process.argv.length >= 3)
+	var config      = require ('./' + process.argv[2]);
+else
+	var config      = require ('./config.json');
+
 var log 		= require ('./log');
 
 var morgan      = require ('morgan');
