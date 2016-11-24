@@ -4,7 +4,10 @@ html
 		include ./includes/nav.jade
 
 		div.container
-			iframe(style="width:100%; padding:0; border:0; height:120px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
+			if coin == 'SHIFT'
+				iframe(style="width:100%; padding:0; border:0; height:120px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
+			else
+				iframe(style="width:100%; padding:0; border:0; height:170px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
 			br
 		div.container(id="stats")
 			span Loading...

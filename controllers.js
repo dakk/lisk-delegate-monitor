@@ -214,11 +214,30 @@ exports.update = function () {
 
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', next);
 		},
-		function (error, response, body) {
+		function (error, response, body, next) {
 			if (error || response.statusCode != 200) 
-				return log.critical ('Data', 'Failed to download outsider list from node.');
+				return log.critical ('Data', 'Failed to download outsider list 1 from node.');
 
 			var data = JSON.parse(body);
+
+			request('http://' + config.node + '/api/delegates/?limit=101&offset=201&orderBy=rate:asc', next.bind (null, data));
+		},
+		function (data, error, response, body, next) {
+			if (error || response.statusCode != 200) 
+				return log.critical ('Data', 'Failed to download outsider list 2 from node.');
+
+			var data2 = JSON.parse(body);
+			data.delegates = data.delegates.concat (data2.delegates);
+
+			request('http://' + config.node + '/api/delegates/?limit=101&offset=301&orderBy=rate:asc', next.bind (null, data));
+		},
+		function (data, error, response, body) {
+			if (error || response.statusCode != 200) 
+				return log.critical ('Data', 'Failed to download outsider list 3 from node.');
+
+			var data2 = JSON.parse(body);
+			data.delegates = data.delegates.concat (data2.delegates);
+
 			var outsideList2 = [];
 
 			for (var i = 0; i < data.delegates.length; i++) {
@@ -243,10 +262,12 @@ exports.updateVotes = function () {
 	log.debug ('Data', 'Updating votes data...');
 	var votes2 = [];
 
+	var dlist = delegateList.concat (outsideList);
+
 	/* First row is the username row */
 	var row = ['//'];
-	for (var i = 0; i < delegateList.length; i++) {
-		row.push (delegateList[i].username);
+	for (var i = 0; i < dlist.length; i++) {
+		row.push (dlist[i].username);
 	}
 	votes2.push (row);
 
@@ -256,10 +277,10 @@ exports.updateVotes = function () {
 			next (0, next);
 		},
 		function (i, current, next) {
-			if (i >= delegateList.length)
+			if (i >= dlist.length)
 				return next ();
 
-			var d = delegateList[i];
+			var d = dlist[i];
 			
 			request ('http://' + config.node + '/api/accounts/delegates/?address=' + d.address, function (error, response, body) {
 				var rrow = [d.username];
@@ -269,10 +290,10 @@ exports.updateVotes = function () {
 
 				var data = JSON.parse(body);
 
-				for (var j = 0; j < delegateList.length; j++) {
+				for (var j = 0; j < dlist.length; j++) {
 					var r = false;
 					for (var z = 0; z < data.delegates.length; z++) {
-						if (data.delegates[z].address == delegateList[j].address) {
+						if (data.delegates[z].address == dlist[j].address) {
 							r = true;
 							break;
 						}		
