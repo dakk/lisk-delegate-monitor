@@ -1,3 +1,5 @@
+"use strict";
+
 const express		= require ('express');
 const request     = require ('request');
 const TelegramBot = require ('node-telegram-bot-api');
@@ -20,6 +22,7 @@ var stats = {
 	mined: 0,
 	shift: 0
 };
+var forged = {};
 var balances = {};
 var alive = {};
 var votes = [];
@@ -319,30 +322,47 @@ exports.updateVotes = function () {
 
 exports.updateBalances = function () {
 	log.debug ('Data', 'Updating balance data...');
-	for (var i = 0; i < delegateList.length; i++) {
-		request ('http://' + config.node + '/api/accounts?address=' + delegateList[i].address, function (error, response, body) {
-			if (!error && response.statusCode == 200) {
-				var data = JSON.parse(body);
-				balances [data.account.address] = data.account.balance / 100000000;
-			}
+	var promises = [];
+	
+	var promiseFactory = function (deleg, isAddr) {
+		if (isAddr) 
+			deleg = { address: deleg };
+
+		return new Promise ((resolve, reject) => {
+			request ('http://' + config.node + '/api/accounts?address=' + deleg.address, function (error, response, body) {
+				if (!error && response.statusCode == 200) {
+					var data = JSON.parse(body);
+					balances [deleg.address] = data.account.balance / 100000000;
+				}
+
+				if (!isAddr) {
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, function (error, response, body) {
+						if (!error && response.statusCode == 200) {
+							var data = JSON.parse(body);
+							forged [deleg.address] = data.forged / 100000000;
+						} else {
+							forged [deleg.address] = 0;
+						}
+						resolve ();
+					});
+				} else {
+					forged [deleg.address] = 0;
+					resolve ();
+				}
+			});
 		});
-	}
-	for (var i = 0; i < outsideList.length; i++) {
-		request ('http://' + config.node + '/api/accounts?address=' + outsideList[i].address, function (error, response, body) {
-			if (!error && response.statusCode == 200) {
-				var data = JSON.parse(body);
-				balances [data.account.address] = data.account.balance / 100000000;
-			}
-		});
-	}
-	for (var i = 0; i < config.addresses.length; i++) {
-		request ('http://' + config.node + '/api/accounts?address=' + config.addresses[i], function (error, response, body) {
-			if (!error && response.statusCode == 200) {
-				var data = JSON.parse(body);
-				balances [data.account.address] = data.account.balance / 100000000;
-			}
-		});
-	}
+	};
+
+	for (let i = 0; i < delegateList.length; i++)
+		promises.push (promiseFactory (delegateList[i]));
+
+	for (let i = 0; i < outsideList.length; i++)
+		promises.push (promiseFactory (outsideList[i]));
+
+	for (var i = 0; i < config.addresses.length; i++)
+		promises.push (promiseFactory (config.addresses[i], true));
+
+	Promise.all (promises);
 };
 
 
@@ -361,7 +381,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { height: height, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

@@ -65,8 +65,9 @@ table.table.table-striped.table-condensed.table-hover
 					th Username
 					th Productivity
 					th Approval
-					th Mined (missed)
+					th Forged blocks (missed)
 					th Balance
+					th Forged
 					th Status
 
 				each d in delegates
@@ -80,7 +81,10 @@ table.table.table-striped.table-condensed.table-hover
 							span &nbsp;(
 							span= d.missedblocks
 							span )
-						td= balances[d.address]
+						td
+							span= balances[d.address]
+						td
+							span= forged[d.address]
 						td
 							if alive[d.address] == true
 								span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
@@ -99,7 +103,10 @@ table.table.table-striped.table-condensed.table-hover
 							span &nbsp;(
 							span= d.missedblocks
 							span )
-						td= balances[d.address]
+						td
+							span= balances[d.address]
+						td
+							span= forged[d.address]
 						td
 							span(style="color: #f39c12").glyphicon.text-primary.glyphicon-minus-sign
 							
@@ -111,6 +118,7 @@ table.table.table-striped.table-condensed.table-hover
 						td &nbsp;
 						td &nbsp;
 						td= balances[addr]
+						td 0
 						td
 							span(style="color: #3498db").glyphicon.text-primary.glyphicon-eye-open
 
