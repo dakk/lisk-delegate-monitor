@@ -1,8 +1,8 @@
-var express		= require ('express');
-var request     = require ('request');
-var TelegramBot = require ('node-telegram-bot-api');
-var fs 			= require ('fs');
-var waterfall	= require ('waterfall-ya');
+const express		= require ('express');
+const request     = require ('request');
+const TelegramBot = require ('node-telegram-bot-api');
+const fs 			= require ('fs');
+const waterfall	= require ('waterfall-ya');
 
 var log			= require ('./log');
 
@@ -24,7 +24,7 @@ var balances = {};
 var alive = {};
 var votes = [];
 var alerted = {};
-
+var height = 0;
 
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
@@ -44,92 +44,93 @@ delegateMonitor = loadDelegateMonitor ();
 
 
 
-/** Telegram bot */
-var bot = new TelegramBot (config.telegram.token, {polling: true});
-var botHelp = 'Type:\n\t/stats\n\t/table\n\t/reds\n\t/watch delegatename\n\t/unwatch delegatename\n\t/watched';
+/** Telegram bot */						
+if (config.telegram.enabled) {
+	var bot = new TelegramBot (config.telegram.token, {polling: true});
+	var botHelp = 'Type:\n\t/stats\n\t/table\n\t/reds\n\t/watch delegatename\n\t/unwatch delegatename\n\t/watched';
 
-bot.onText(/\/help/, function (msg) {
+	bot.onText(/\/help/, function (msg) {
+		var fromId = msg.from.id;
+		bot.sendMessage(fromId, botHelp);
+	});
+
+	bot.onText(/\/start/, function (msg) {
+		var fromId = msg.from.id;
+		bot.sendMessage(fromId, botHelp);
+	});
+
+	bot.onText(/\/watch (.+)/, function (msg, match) {
 	var fromId = msg.from.id;
-	bot.sendMessage(fromId, botHelp);
-});
+	var delegate = match[1];
 
-bot.onText(/\/start/, function (msg) {
-	var fromId = msg.from.id;
-	bot.sendMessage(fromId, botHelp);
-});
-
-bot.onText(/\/watch (.+)/, function (msg, match) {
-  var fromId = msg.from.id;
-  var delegate = match[1];
-
-  if (config.lobby.indexOf (delegate) == -1) {
-	  bot.sendMessage(fromId, 'Delegate ' + delegate + ' is not part of the lobby.');
-	  return;
-  }
-
-  if (! (delegate in delegateMonitor))
-  	delegateMonitor [delegate] = [fromId];
-  else
-  	delegateMonitor [delegate].push (fromId);
-
-  saveDelegateMonitor ();
-  log.debug ('Monitor', 'New watcher for: ' + delegate);
-
-  bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now enabled. You will receive a private message in case of red state.');
-});
-
-
-bot.onText(/\/unwatch (.+)/, function (msg, match) {
-  var fromId = msg.from.id;
-  var delegate = match[1];
-
-  if (delegate in delegateMonitor) {
-	  var i = delegateMonitor[delegate].indexOf (fromId);
-	  if (i != -1) {
-		  delegateMonitor[delegate].splice (i, 1);
-		  saveDelegateMonitor ();
-	  }
-  }
-  log.debug ('Monitor', 'Removed watcher for: ' + delegate);
-
-  bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now disabled.');
-});
-
-
-bot.onText(/\/watched/, function (msg) {
-	var fromId = msg.from.id;
-	
-	var message = "You are monitoring:\n";
-	for (var d in delegateMonitor) {
-		if (delegateMonitor[d].indexOf (fromId) != -1)
-			message += '   ' + d + '\n';
-	}
-	
-	bot.sendMessage(fromId, message);
-});
-
-bot.onText(/\/stats/, function (msg) {
-	var fromId = msg.from.id;
-	bot.sendMessage(fromId, 'Delegates: ' + stats.delegates + ', Mined blocks: ' + stats.mined + ', Total shifts: ' + stats.shift + ', Red delegates: ' + stats.notalive);
-});
-
-bot.onText(/\/table/, function (msg) {
-	var fromId = msg.from.id;
-
-	var str = "";
-	for (var i = 0; i < delegateList.length; i++) {
-		var d = delegateList[i];
-		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
-	}
-	str += "\nOutsiders:\n";
-	for (var i = 0; i < outsideList.length; i++) {
-		var d = outsideList[i];
-		str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
+	if (config.lobby.indexOf (delegate) == -1) {
+		bot.sendMessage(fromId, 'Delegate ' + delegate + ' is not part of the lobby.');
+		return;
 	}
 
-	bot.sendMessage(fromId, str);
-});
+	if (! (delegate in delegateMonitor))
+		delegateMonitor [delegate] = [fromId];
+	else
+		delegateMonitor [delegate].push (fromId);
 
+	saveDelegateMonitor ();
+	log.debug ('Monitor', 'New watcher for: ' + delegate);
+
+	bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now enabled. You will receive a private message in case of red state.');
+	});
+
+
+	bot.onText(/\/unwatch (.+)/, function (msg, match) {
+	var fromId = msg.from.id;
+	var delegate = match[1];
+
+	if (delegate in delegateMonitor) {
+		var i = delegateMonitor[delegate].indexOf (fromId);
+		if (i != -1) {
+			delegateMonitor[delegate].splice (i, 1);
+			saveDelegateMonitor ();
+		}
+	}
+	log.debug ('Monitor', 'Removed watcher for: ' + delegate);
+
+	bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now disabled.');
+	});
+
+
+	bot.onText(/\/watched/, function (msg) {
+		var fromId = msg.from.id;
+		
+		var message = "You are monitoring:\n";
+		for (var d in delegateMonitor) {
+			if (delegateMonitor[d].indexOf (fromId) != -1)
+				message += '   ' + d + '\n';
+		}
+		
+		bot.sendMessage(fromId, message);
+	});
+
+	bot.onText(/\/stats/, function (msg) {
+		var fromId = msg.from.id;
+		bot.sendMessage(fromId, 'Delegates: ' + stats.delegates + ', Mined blocks: ' + stats.mined + ', Total shifts: ' + stats.shift + ', Red delegates: ' + stats.notalive);
+	});
+
+	bot.onText(/\/table/, function (msg) {
+		var fromId = msg.from.id;
+
+		var str = "";
+		for (var i = 0; i < delegateList.length; i++) {
+			var d = delegateList[i];
+			str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
+		}
+		str += "\nOutsiders:\n";
+		for (var i = 0; i < outsideList.length; i++) {
+			var d = outsideList[i];
+			str += d.rate + '\t' + d.username + '\t' + d.productivity + '\t' + d.approval + '\n'; 
+		}
+
+		bot.sendMessage(fromId, str);
+	});
+}
 
 /** Data update */
 exports.update = function () {
@@ -178,6 +179,8 @@ exports.update = function () {
 			data.blocks = data.blocks.concat (data2.blocks);
 
 			alive = {};
+			height = data.blocks[0].height;
+			
 			for (var i = 0; i < data.blocks.length; i++) {
 				alive [data.blocks[i].generatorId] = true;
 			}
@@ -198,14 +201,16 @@ exports.update = function () {
 						log.critical ('Monitor', 'Red state for: ' + delegateList2[i].username);
 
 						/* Avvisa i canali registrati */
-						for (var z = 0; z < config.telegram.chatids.length; z++)
-							bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+						if (config.telegram.enabled)
+							for (var z = 0; z < config.telegram.chatids.length; z++)
+								bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
 
 						/* Avvisa gli utenti registrati */
-						if (delegateList2[i].username in delegateMonitor) {
-							for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
-								bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
-						}
+						if (config.telegram.enabled)
+							if (delegateList2[i].username in delegateMonitor) {
+								for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
+									bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+							}
 					}
 				} else {
 					delete alerted [delegateList2[i].address];
@@ -356,7 +361,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { height: height, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;
