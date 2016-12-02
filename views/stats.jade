@@ -13,7 +13,20 @@ div.row
 									span= stats.outsides
 									span &nbsp; outside)
 
+
 				div.col-md-3
+					div.panel.panel-info
+						div.panel-heading
+							div.row
+								div.col-md-4
+									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-book
+								div.col-md-8
+									span Forged
+									br
+									span= stats.mined
+									span= ' (' + stats.minedshift + ' ' + coin + ')'
+
+				div.col-md-2
 					div.panel.panel-warning
 						div.panel-heading
 							div.row
@@ -24,18 +37,8 @@ div.row
 										span= stats.coin
 										span Sum
 									br
-									span= stats.shift
+									span= stats.shift + ' ' + coin
 
-				div.col-md-2
-					div.panel.panel-info
-						div.panel-heading
-							div.row
-								div.col-md-4
-									span(style="font-size: 300%; color: #fff").glyphicon.text-primary.glyphicon-book
-								div.col-md-8
-									span Mined
-									br
-									span= stats.mined
 
 				div.col-md-2
 					div.panel.panel-info

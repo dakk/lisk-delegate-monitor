@@ -20,7 +20,8 @@ var outsideList = [];
 var stats = {
 	delegates: 0,
 	mined: 0,
-	shift: 0
+	shift: 0,
+	minedshift: 0
 };
 var forged = {};
 var balances = {};
@@ -140,7 +141,7 @@ exports.update = function () {
 	log.debug ('Data', 'Updating data...');
 
 	var delegateList2 = [];
-	var stats2 = { delegates: 0, mined: 0, shift: 0 };
+	var stats2 = { delegates: 0, mined: 0, shift: 0, minedshift: 0 };
 
 	waterfall([
 		function (next) {
@@ -162,7 +163,8 @@ exports.update = function () {
 			}
 
 			for (var d in balances) {
-				stats2.shift += Math.floor (balances[d] * 10) / 10;
+				stats2.shift += Math.floor (balances[d]);
+				stats2.minedshift += Math.floor (forged[d]);
 			}
 
 			request('http://' + config.node + '/api/blocks?limit=100&orderBy=height:desc', next);
@@ -323,7 +325,7 @@ exports.updateVotes = function () {
 exports.updateBalances = function () {
 	log.debug ('Data', 'Updating balance data...');
 	var promises = [];
-	
+
 	var promiseFactory = function (deleg, isAddr) {
 		if (isAddr) 
 			deleg = { address: deleg };
@@ -362,7 +364,8 @@ exports.updateBalances = function () {
 	for (var i = 0; i < config.addresses.length; i++)
 		promises.push (promiseFactory (config.addresses[i], true));
 
-	Promise.all (promises);
+	Promise.all (promises).then (() => {
+	});
 };
 
 
