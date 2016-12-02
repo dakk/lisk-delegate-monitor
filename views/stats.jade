@@ -131,12 +131,27 @@ h2 Forging turns
 table.table.table-striped.table-condensed.table-hover
 	tr
 		th Delegate 
-		th Blocks from next forge
+		th Blocks to forge
+		th Average time to forge
+		th Productivity
+		th Forged blocks
+		th Missed blocks
 
 	each d in turns
 		tr
 			td= d.delegate 
-			td= d.blocks
+			td
+				if d.blocks == 0
+					span(style="color: #009900")
+						span.glyphicon.text-primary.glyphicon-refresh
+						span Forging...
+				else
+					span= d.blocks
+
+			td= d.avgtime
+			td= delegatesDict[d.delegate].productivity
+			td= delegatesDict[d.delegate].producedblocks
+			td= delegatesDict[d.delegate].missedblocks
 
 
 hr

@@ -31,6 +31,7 @@ var alerted = {};
 var height = 0;
 var pubkeys = {};
 var turns = [];
+var delegatesDict = {};
 
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
@@ -162,6 +163,7 @@ exports.update = function () {
 					data.delegates[i].state = 2;
 					delegateList2.push (data.delegates[i]);
 					pubkeys[data.delegates[i].publicKey] = data.delegates[i].username;
+					delegatesDict[data.delegates[i].username] = data.delegates[i];
 				}
 			}
 
@@ -275,7 +277,7 @@ exports.update = function () {
 			turns = [];
 			for (var i = 0; i < data.delegates.length; i++) {
 				if (data.delegates[i] in pubkeys)
-					turns.push ({ delegate: pubkeys[data.delegates[i]], blocks: i });
+					turns.push ({ delegate: pubkeys[data.delegates[i]], blocks: i, avgtime: i * 10 });
 			}
 
 			log.debug ('Data', 'Next forgers updated.');
@@ -401,7 +403,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;
