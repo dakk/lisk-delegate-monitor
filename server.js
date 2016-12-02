@@ -20,12 +20,11 @@ process.on('uncaughtException', function (err) {
 
 /* Start the update loop */
 controllers.update ();
-setInterval (controllers.update, 10000);
+setInterval (controllers.update, 9000);
 setTimeout (controllers.updateBalances, 5000);
 setInterval (controllers.updateBalances, 60000);
 setTimeout (controllers.updateVotes, 10000);
-setInterval (controllers.updateVotes, 120000);
-
+setInterval (controllers.updateVotes, 600000);
 
 /* Server */
 var app = express ();

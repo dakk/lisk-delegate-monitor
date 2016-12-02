@@ -125,6 +125,20 @@ table.table.table-striped.table-condensed.table-hover
 						td
 							span(style="color: #3498db").glyphicon.text-primary.glyphicon-eye-open
 
+
+hr
+h2 Forging turns
+table.table.table-striped.table-condensed.table-hover
+	tr
+		th Delegate 
+		th Blocks from next forge
+
+	each d in turns
+		tr
+			td= d.delegate 
+			td= d.blocks
+
+
 hr
 h2 Votes
 

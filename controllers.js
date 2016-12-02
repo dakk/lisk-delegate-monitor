@@ -29,6 +29,8 @@ var alive = {};
 var votes = [];
 var alerted = {};
 var height = 0;
+var pubkeys = {};
+var turns = [];
 
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
@@ -159,6 +161,7 @@ exports.update = function () {
 					stats2.mined += data.delegates[i].producedblocks;
 					data.delegates[i].state = 2;
 					delegateList2.push (data.delegates[i]);
+					pubkeys[data.delegates[i].publicKey] = data.delegates[i].username;
 				}
 			}
 
@@ -241,7 +244,7 @@ exports.update = function () {
 
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=301&orderBy=rate:asc', next.bind (null, data));
 		},
-		function (data, error, response, body) {
+		function (data, error, response, body, next) {
 			if (error || response.statusCode != 200) 
 				return log.critical ('Data', 'Failed to download outsider list 3 from node.');
 
@@ -263,9 +266,23 @@ exports.update = function () {
 			stats = stats2;
 
 			log.debug ('Data', 'Data updated.');
+
+			request('https://' + config.nodewithdelegatelist + '/api/delegates/getNextForgers?limit=101', next)
+		},
+		function (err, response, body) {
+			var data = JSON.parse(body);
+
+			turns = [];
+			for (var i = 0; i < data.delegates.length; i++) {
+				if (data.delegates[i] in pubkeys)
+					turns.push ({ delegate: pubkeys[data.delegates[i]], blocks: i });
+			}
+
+			log.debug ('Data', 'Next forgers updated.');
 		}
 	]);
 };
+
 
 
 exports.updateVotes = function () {
@@ -384,7 +401,7 @@ router.get('/', checkLogin, function (req, res) {
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

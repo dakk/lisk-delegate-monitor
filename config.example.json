@@ -2,6 +2,7 @@
 	"coin": "SHIFT",
 	"port": 9090,
 	"node": "192.168.1.1:9305",
+	"nodewithdelegatelist": "wallet.lisk.4miners.net",
 	"telegram": {
 		"token": "",
 		"chatids": [1234, 124324],

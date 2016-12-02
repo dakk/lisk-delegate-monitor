@@ -31,6 +31,6 @@ html
 			};
 
 			$("#stats").load("/stats?key=" + getUrlParameter ('key'));
-			setTimeout (function () {
+			setInterval (function () {
 				$("#stats").load("/stats?key=" + getUrlParameter ('key'));
-			}, 10000);
+			}, 9000);
