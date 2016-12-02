@@ -208,13 +208,13 @@ exports.update = function () {
 						/* Avvisa i canali registrati */
 						if (config.telegram.enabled)
 							for (var z = 0; z < config.telegram.chatids.length; z++)
-								bot.sendMessage (config.telegram.chatids[z], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+								bot.sendMessage (config.telegram.chatids[z], '@' + config.telegram.users[delegateList2[i].username] + ' : Warning! The delegate "' + delegateList2[i].username + '" is in red state.');
 
 						/* Avvisa gli utenti registrati */
 						if (config.telegram.enabled)
 							if (delegateList2[i].username in delegateMonitor) {
 								for (var j = 0; j < delegateMonitor [delegateList2[i].username].length; j++)
-									bot.sendMessage (delegateMonitor [delegateList2[i].username][j], 'Warning! The delegate "' + delegateList2[i].username + '" (@' + config.telegram.users[delegateList2[i].username] + ') is in red state.');
+									bot.sendMessage (delegateMonitor [delegateList2[i].username][j], '@' + config.telegram.users[delegateList2[i].username] + ' : Warning! The delegate "' + delegateList2[i].username + '" is in red state.');
 							}
 					}
 				} else {
