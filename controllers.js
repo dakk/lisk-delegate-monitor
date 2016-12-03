@@ -67,40 +67,40 @@ if (config.telegram.enabled) {
 	});
 
 	bot.onText(/\/watch (.+)/, function (msg, match) {
-	var fromId = msg.from.id;
-	var delegate = match[1];
+		var fromId = msg.from.id;
+		var delegate = match[1];
 
-	if (config.lobby.indexOf (delegate) == -1) {
-		bot.sendMessage(fromId, 'Delegate ' + delegate + ' is not part of the lobby.');
-		return;
-	}
+		if (config.lobby.indexOf (delegate) == -1) {
+			bot.sendMessage(fromId, 'Delegate ' + delegate + ' is not part of the lobby.');
+			return;
+		}
 
-	if (! (delegate in delegateMonitor))
-		delegateMonitor [delegate] = [fromId];
-	else
-		delegateMonitor [delegate].push (fromId);
+		if (! (delegate in delegateMonitor))
+			delegateMonitor [delegate] = [fromId];
+		else
+			delegateMonitor [delegate].push (fromId);
 
-	saveDelegateMonitor ();
-	log.debug ('Monitor', 'New watcher for: ' + delegate);
+		saveDelegateMonitor ();
+		log.debug ('Monitor', 'New watcher for: ' + delegate);
 
-	bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now enabled. You will receive a private message in case of red state.');
+		bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now enabled. You will receive a private message in case of red state.');
 	});
 
 
 	bot.onText(/\/unwatch (.+)/, function (msg, match) {
-	var fromId = msg.from.id;
-	var delegate = match[1];
+		var fromId = msg.from.id;
+		var delegate = match[1];
 
-	if (delegate in delegateMonitor) {
-		var i = delegateMonitor[delegate].indexOf (fromId);
-		if (i != -1) {
-			delegateMonitor[delegate].splice (i, 1);
-			saveDelegateMonitor ();
+		if (delegate in delegateMonitor) {
+			var i = delegateMonitor[delegate].indexOf (fromId);
+			if (i != -1) {
+				delegateMonitor[delegate].splice (i, 1);
+				saveDelegateMonitor ();
+			}
 		}
-	}
-	log.debug ('Monitor', 'Removed watcher for: ' + delegate);
+		log.debug ('Monitor', 'Removed watcher for: ' + delegate);
 
-	bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now disabled.');
+		bot.sendMessage(fromId, 'Delegate monitor of ' + delegate + ' is now disabled.');
 	});
 
 
@@ -114,6 +114,15 @@ if (config.telegram.enabled) {
 		}
 		
 		bot.sendMessage(fromId, message);
+	});
+
+	bot.onText(/\/turns/, function (msg) {
+		var fromId = msg.from.id;
+		var turnss = 'Turns:\n';
+		for (var i = 0; i < turns.length; i++) {
+			turnss += ` ${turns[i].delegate}: in ${turns[i].blocks} blocks (${Math.floor (turns[i].avgtime / 60) + ' min and ' + (turns[i].avgtime % 60) + ' sec'})\n`;
+		}
+		bot.sendMessage(fromId, turnss);
 	});
 
 	bot.onText(/\/stats/, function (msg) {
