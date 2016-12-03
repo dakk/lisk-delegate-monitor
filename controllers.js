@@ -391,6 +391,11 @@ exports.updateBalances = function () {
 };
 
 
+exports.updateDonations = function () {
+
+};
+
+
 /** Routes */
 var router 		= express.Router();
 
@@ -419,6 +424,10 @@ router.get('/turns', checkLogin, function (req, res) {
 
 router.get('/ranklist', checkLogin, function (req, res) {
 	res.render ('ranklist', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+});
+
+router.get('/donations', checkLogin, function (req, res) {
+	res.render ('donations', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

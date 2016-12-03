@@ -29,6 +29,9 @@ if (!config.all) {
 	setInterval (controllers.updateVotes, 600000);
 }
 
+setTimeout (controllers.updateDonations, 10000);
+setInterval (controllers.updateDonations, 600000);
+
 /* Server */
 var app = express ();
 app.use (morgan ('route', { skip: function (req, res) { return (req.method == 'OPTIONS'); } }));
