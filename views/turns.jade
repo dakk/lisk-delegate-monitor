@@ -7,6 +7,7 @@ table.table.table-striped.table-condensed.table-hover
 		th Forged blocks
 		th Missed blocks
 		th Forged (LSK)
+		th Status
 
 	each d in turns
 		tr
@@ -28,3 +29,8 @@ table.table.table-striped.table-condensed.table-hover
 			td= delegatesDict[d.delegate].producedblocks
 			td= delegatesDict[d.delegate].missedblocks
 			td= forged[delegatesDict[d.delegate].address]
+			td
+				if alive[delegatesDict[d.delegate].address] == true
+					span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
+				else
+					span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
