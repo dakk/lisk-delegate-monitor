@@ -157,7 +157,7 @@ exports.update = function () {
 			var data = JSON.parse(body);
 
 	   		for (var i = 0; i < data.delegates.length; i++) {
-				if (config.lobby.indexOf (data.delegates[i].username) != -1) {
+				if (config.all || config.lobby.indexOf (data.delegates[i].username) != -1) {
 					stats2.delegates += 1;
 					stats2.mined += data.delegates[i].producedblocks;
 					data.delegates[i].state = 2;
@@ -255,13 +255,16 @@ exports.update = function () {
 
 			var outsideList2 = [];
 
-			for (var i = 0; i < data.delegates.length; i++) {
-				if (config.lobby.indexOf (data.delegates[i].username) != -1) {
-					data.delegates[i].state = 2;
-					stats2.mined += data.delegates[i].producedblocks;
-					outsideList2.push (data.delegates[i]);
+			if (!config.all) {
+				for (var i = 0; i < data.delegates.length; i++) {
+					if (config.lobby.indexOf (data.delegates[i].username) != -1) {
+						data.delegates[i].state = 2;
+						stats2.mined += data.delegates[i].producedblocks;
+						outsideList2.push (data.delegates[i]);
+					}
 				}
 			}
+
 			outsideList = outsideList2;
 			stats2.outsides = outsideList.length;
 			delegateList = delegateList2;
@@ -392,18 +395,30 @@ exports.updateBalances = function () {
 var router 		= express.Router();
 
 var checkLogin = function (req, res, next) {
-	if ('key' in req.query && req.query.key == config.accesskey)
+	if (!config.accesskey || ('key' in req.query && req.query.key == config.accesskey))
 		next ();
 	else
 		res.status(500);
 };
 
 router.get('/', checkLogin, function (req, res) {
-	res.render ('index', { coin: config.coin }); 
+	res.render ('index', { coin: config.coin, all: config.all }); 
 });
 
 router.get('/stats', checkLogin, function (req, res) {
-	res.render ('stats', { delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('stats', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+});
+
+router.get('/votes', checkLogin, function (req, res) {
+	res.render ('votes', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+});
+
+router.get('/turns', checkLogin, function (req, res) {
+	res.render ('turns', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+});
+
+router.get('/ranklist', checkLogin, function (req, res) {
+	res.render ('ranklist', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
 exports.router = router;

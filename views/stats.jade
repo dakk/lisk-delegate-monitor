@@ -1,5 +1,5 @@
 div.row
-				div.col-md-3
+				div.col-md-2
 					div.panel.panel-success
 						div.panel-heading
 							div.row
@@ -9,9 +9,10 @@ div.row
 									span Delegates
 									br
 									span= stats.delegates
-									span &nbsp;(
-									span= stats.outsides
-									span &nbsp; outside)
+									if !all && all
+										span &nbsp;(
+										span= stats.outsides
+										span &nbsp; outside)
 
 
 				div.col-md-3
@@ -26,7 +27,7 @@ div.row
 									span= stats.mined
 									span= ' (' + stats.minedshift + ' ' + coin + ')'
 
-				div.col-md-2
+				div.col-md-3
 					div.panel.panel-warning
 						div.panel-heading
 							div.row
@@ -62,110 +63,3 @@ div.row
 									br
 									span= stats.notalive
 
-table.table.table-striped.table-condensed.table-hover
-				tr
-					th Rank
-					th Username
-					th Productivity
-					th Approval
-					th Forged blocks (missed)
-					th Balance
-					th Forged
-					th Status
-
-				each d in delegates
-					tr
-						td= d.rate
-						td= d.username
-						td= d.productivity
-						td= d.approval
-						td
-							span= d.producedblocks
-							span &nbsp;(
-							span= d.missedblocks
-							span )
-						td
-							span= balances[d.address]
-						td
-							span= forged[d.address]
-						td
-							if alive[d.address] == true
-								span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
-							else
-								span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
-
-
-				each d in outsides
-					tr
-						td= d.rate
-						td= d.username
-						td= d.productivity
-						td= d.approval
-						td
-							span= d.producedblocks
-							span &nbsp;(
-							span= d.missedblocks
-							span )
-						td
-							span= balances[d.address]
-						td
-							span= forged[d.address]
-						td
-							span(style="color: #f39c12").glyphicon.text-primary.glyphicon-minus-sign
-							
-				each addr in addresses
-					tr
-						td &nbsp;
-						td= addr
-						td &nbsp;
-						td &nbsp;
-						td &nbsp;
-						td= balances[addr]
-						td 0
-						td
-							span(style="color: #3498db").glyphicon.text-primary.glyphicon-eye-open
-
-
-hr
-h2 Forging turns
-table.table.table-striped.table-condensed.table-hover
-	tr
-		th Delegate 
-		th Blocks to forge
-		th Average time to forge
-		th Productivity
-		th Forged blocks
-		th Missed blocks
-
-	each d in turns
-		tr
-			td= d.delegate 
-			td
-				if d.blocks == 0
-					span(style="color: #009900")
-						span.glyphicon.text-primary.glyphicon-refresh
-						span Forging...
-				else
-					span= d.blocks
-
-			td= d.avgtime
-			td= delegatesDict[d.delegate].productivity
-			td= delegatesDict[d.delegate].producedblocks
-			td= delegatesDict[d.delegate].missedblocks
-
-
-hr
-h2 Votes
-
-table.table.table-striped.table-condensed.table-hover
-	each row in votes
-		tr
-			each cell in row
-				td(align="center")
-					if cell == true
-						span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
-					if cell == false
-						span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
-					if cell != false && cell != true
-						span= cell
-							

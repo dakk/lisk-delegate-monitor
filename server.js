@@ -23,8 +23,11 @@ controllers.update ();
 setInterval (controllers.update, 9000);
 setTimeout (controllers.updateBalances, 5000);
 setInterval (controllers.updateBalances, 60000);
-setTimeout (controllers.updateVotes, 10000);
-setInterval (controllers.updateVotes, 600000);
+
+if (!config.all) {
+	setTimeout (controllers.updateVotes, 10000);
+	setInterval (controllers.updateVotes, 600000);
+}
 
 /* Server */
 var app = express ();

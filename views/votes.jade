@@ -1,0 +1,13 @@
+if !all
+	table.table.table-striped.table-condensed.table-hover
+		each row in votes
+			tr
+				each cell in row
+					td(align="center")
+						if cell == true
+							span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
+						if cell == false
+							span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
+						if cell != false && cell != true
+							span= cell
+								

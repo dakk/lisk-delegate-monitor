@@ -1,0 +1,30 @@
+table.table.table-striped.table-condensed.table-hover
+	tr
+		th Delegate 
+		th Blocks to forge
+		th Average time to forge
+		th Productivity
+		th Forged blocks
+		th Missed blocks
+		th Forged (LSK)
+
+	each d in turns
+		tr
+			td= d.delegate 
+			td
+				if d.blocks == 0
+					span(style="color: #009900")
+						span.glyphicon.text-primary.glyphicon-refresh
+						span= ' Forging...'
+				else
+					span= d.blocks
+
+			td
+				if d.avgtime <= 60
+					span= d.avgtime + ' sec'
+				else
+					span= Math.floor (d.avgtime / 60) + ' min and ' + (d.avgtime % 60) + ' sec'
+			td= delegatesDict[d.delegate].productivity
+			td= delegatesDict[d.delegate].producedblocks
+			td= delegatesDict[d.delegate].missedblocks
+			td= forged[delegatesDict[d.delegate].address]

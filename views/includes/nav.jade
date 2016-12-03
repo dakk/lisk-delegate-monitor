@@ -6,7 +6,12 @@ nav.navbar.navbar-default
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			a.navbar-brand(href="/")= coin + ' Lobby'
+			a.navbar-brand(href="/")
+				if coin == 'LSK'
+					span Lisk Delegate Monitor
+				if coin == 'SHIFT'
+					span Shift Delegate Monitor
+					
 		div.navbar-collapse.collapse(id="navbar")
 			ul.nav.navbar-nav
 				li.active

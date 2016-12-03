@@ -7,10 +7,46 @@ html
 			if coin == 'SHIFT'
 				iframe(style="width:100%; padding:0; border:0; height:120px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
 			else
-				iframe(style="width:100%; padding:0; border:0; height:170px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
+				iframe(style="width:100%; padding:0; border:0; height:195px;", src="http://widget.ethereumwisdom.com/#/#{coin}")
 			br
 		div.container(id="stats")
 			span Loading...
+
+		div.container
+			div.panel-group#accordion(role="tablist", aria-multiselectable="true")
+				div.panel.panel-success
+					div.panel-heading#heading1(role="tab")
+						h4.panel-title
+							a(role="button", data-toggle="collapse", data-parent="#accordion", href="#collapse1", aria-expanded="true", aria-controls="collapse1") 
+								span.glyphicon.glyphicon-chevron-down
+								span &nbsp;Rank list
+					div.panel-collapse.collapse#collapse1(role="tabpanel", aria-labelledby="heading1")
+						div.panel-body
+							div(id="ranklist")
+								span Loading...
+								
+				div.panel.panel-success
+					div.panel-heading#heading2(role="tab")
+						h4.panel-title
+							a(role="button", data-toggle="collapse", data-parent="#accordion", href="#collapse2", aria-expanded="true", aria-controls="collapse2") 
+								span.glyphicon.glyphicon-chevron-down
+								span &nbsp;Forging turns
+					div.panel-collapse.collapse.in#collapse2(role="tabpanel", aria-labelledby="heading2")
+						div.panel-body
+							div(id="turns")
+								span Loading...
+				
+				if !all
+					div.panel.panel-success
+						div.panel-heading#heading3(role="tab")
+							h4.panel-title
+								a(role="button", data-toggle="collapse", data-parent="#accordion", href="#collapse3", aria-expanded="true", aria-controls="collapse3") 
+									span.glyphicon.glyphicon-chevron-down
+									span &nbsp;Votes
+						div.panel-collapse.collapse#collapse3(role="tabpanel", aria-labelledby="heading3")
+							div.panel-body
+								div(id="votes")
+									span Loading...
 
 		include ./includes/footer.jade
 
@@ -31,6 +67,13 @@ html
 			};
 
 			$("#stats").load("/stats?key=" + getUrlParameter ('key'));
+			$("#ranklist").load("/ranklist?key=" + getUrlParameter ('key'));
+			$("#turns").load("/turns?key=" + getUrlParameter ('key'));
+			$("#votes").load("/votes?key=" + getUrlParameter ('key'));
+
 			setInterval (function () {
 				$("#stats").load("/stats?key=" + getUrlParameter ('key'));
+				$("#ranklist").load("/ranklist?key=" + getUrlParameter ('key'));
+				$("#turns").load("/turns?key=" + getUrlParameter ('key'));
+				$("#votes").load("/votes?key=" + getUrlParameter ('key'));
 			}, 9000);

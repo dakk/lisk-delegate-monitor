@@ -1,7 +1,7 @@
 {
-	"coin": "SHIFT",
+	"coin": "LSK",
 	"port": 9090,
-	"node": "192.168.1.1:9305",
+	"node": "localhost:8000",
 	"nodewithdelegatelist": "wallet.lisk.4miners.net",
 	"telegram": {
 		"token": "",
@@ -13,5 +13,7 @@
 	},
 	"accesskey": "lobbykey",
 	"lobby": [ "davideg", "tizio" ],
-	"addresses": ["1513660116340715009S"]
+	"addresses": ["1513660116340715009S"],
+
+	"all": false
 }
