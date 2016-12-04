@@ -32,6 +32,7 @@ var height = 0;
 var pubkeys = {};
 var turns = [];
 var delegatesDict = {};
+var donationVotes = [];
 
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
@@ -401,12 +402,21 @@ exports.updateBalances = function () {
 
 
 exports.updateDonations = function () {
+	request ('http://' + config.node + '/api/accounts/delegates/?address=2324852447570841050L', function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			var data = JSON.parse(body);
 
+			donationVotes = [];
+			for (var i = 0; i < data.delegates.length; i++) {
+				donationVotes.push (data.delegates[i].username);
+			}
+		}
+	});	
 };
 
 
 /** Routes */
-var router 		= express.Router();
+var router = express.Router();
 
 var checkLogin = function (req, res, next) {
 	if (!config.accesskey || ('key' in req.query && req.query.key == config.accesskey))
@@ -436,7 +446,7 @@ router.get('/ranklist', checkLogin, function (req, res) {
 });
 
 router.get('/donations', checkLogin, function (req, res) {
-	res.render ('donations', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
+	res.render ('donations', { all: config.all || false, donationVotes: donationVotes });
 });
 
 exports.router = router;
