@@ -14,16 +14,17 @@ html
 
 		div.container
 			div.panel-group#accordion(role="tablist", aria-multiselectable="true")
-				div.panel.panel-success
-					div.panel-heading#heading4(role="tab")
-						h4.panel-title
-							a(role="button", data-toggle="collapse", data-parent="#accordion", href="#collapse4", aria-expanded="true", aria-controls="collapse2") 
-								span.glyphicon.glyphicon-chevron-down
-								span &nbsp;Donations and votes
-					div.panel-collapse.collapse.in#collapse4(role="tabpanel", aria-labelledby="heading4")
-						div.panel-body
-							div(id="donations")
-								span Loading...
+				if coin == 'LSK'
+					div.panel.panel-success
+						div.panel-heading#heading4(role="tab")
+							h4.panel-title
+								a(role="button", data-toggle="collapse", data-parent="#accordion", href="#collapse4", aria-expanded="true", aria-controls="collapse2") 
+									span.glyphicon.glyphicon-chevron-down
+									span &nbsp;Donations and votes
+						div.panel-collapse.collapse.in#collapse4(role="tabpanel", aria-labelledby="heading4")
+							div.panel-body
+								div(id="donations")
+									span Loading...
 
 				div.panel.panel-success
 					div.panel-heading#heading1(role="tab")
