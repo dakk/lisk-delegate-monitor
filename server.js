@@ -1,6 +1,8 @@
 "use strict";
 
 var controllers = require ('./controllers');
+var fs			= require ('fs');
+var https 		= require ('https');
 
 if (process.argv.length >= 3)
 	var config      = require ('./' + process.argv[2]);
@@ -16,6 +18,8 @@ var express     = require ('express');
 process.on('uncaughtException', function (err) {
 	console.log ('Except', err.stack);
 });
+
+
 
 
 /* Start the update loop */
@@ -34,11 +38,30 @@ setInterval (controllers.updateDonations, 600000);
 
 /* Server */
 var app = express ();
+
+app.use (function (req, res, next) {
+	if (req.secure && config.https) 
+		next();
+	else			
+		res.redirect('https://' + req.headers.host + req.url);
+});
+
 app.use (morgan ('route', { skip: function (req, res) { return (req.method == 'OPTIONS'); } }));
 
 app.set ('views', __dirname + '/views');
 app.set ('view engine', 'jade');
 app.use ('/', controllers.router);
 
-log.debug ('Server', 'Listening on port: ' + config.port);
-var server = app.listen (config.port);
+
+if (config.https) {	
+	var certs = {
+		key: fs.readFileSync	(config.https.key, 'utf8'),
+		cert: fs.readFileSync	(config.https.cert, 'utf8'),
+	};
+	var server = https.createServer(certs, app).listen (config.https.port);
+	var server2 = app.listen (config.port);
+	log.debug ('Server', 'Listening on port: ' + config.https.port);
+} else {
+	var server = app.listen (config.port);
+	log.debug ('Server', 'Listening on port: ' + config.port);
+}
