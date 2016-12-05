@@ -236,7 +236,7 @@ exports.update = function () {
 					delete alerted [delegateList2[i].address];
 				}
 			}
-
+/*
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', next);
 		},
 		function (error, response, body, next) {
@@ -262,7 +262,6 @@ exports.update = function () {
 
 			var data2 = JSON.parse(body);
 			data.delegates = data.delegates.concat (data2.delegates);
-
 			var outsideList2 = [];
 
 			if (!config.all) {
@@ -275,11 +274,11 @@ exports.update = function () {
 				}
 			}
 
-			outsideList = outsideList2;
+*/
+			outsideList = []; //outsideList2;
 			stats2.outsides = outsideList.length;
 			delegateList = delegateList2;
 			stats = stats2;
-
 			log.debug ('Data', 'Data updated.');
 
 			request('https://' + config.nodewithdelegatelist + '/api/delegates/getNextForgers?limit=101', next)

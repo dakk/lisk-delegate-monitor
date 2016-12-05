@@ -93,11 +93,15 @@ html
 			ga('send', 'pageview');
 
 			setInterval (function () {
-				$("#stats").load("/stats?key=" + getUrlParameter ('key'));
 				$("#ranklist").load("/ranklist?key=" + getUrlParameter ('key'));
+				ga('send', 'pageview');
+			}, 18000);
+
+			setInterval (function () {
+				$("#stats").load("/stats?key=" + getUrlParameter ('key'));
 				$("#turns").load("/turns?key=" + getUrlParameter ('key'));
 				ga('send', 'pageview');
-			}, 9000);
+			}, 12000);
 
 			setInterval (function () {
 				$("#votes").load("/votes?key=" + getUrlParameter ('key'));

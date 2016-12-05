@@ -24,8 +24,8 @@ process.on('uncaughtException', function (err) {
 
 /* Start the update loop */
 controllers.update ();
-setInterval (controllers.update, 9000);
-setTimeout (controllers.updateBalances, 5000);
+setInterval (controllers.update, 14000);
+setTimeout (controllers.updateBalances, 24000);
 setInterval (controllers.updateBalances, 60000);
 
 if (!config.all) {
@@ -34,17 +34,19 @@ if (!config.all) {
 }
 
 setTimeout (controllers.updateDonations, 10000);
-setInterval (controllers.updateDonations, 600000);
+setInterval (controllers.updateDonations, 1200000);
 
 /* Server */
 var app = express ();
 
-app.use (function (req, res, next) {
-	if (req.secure && config.https) 
-		next();
-	else			
-		res.redirect('https://' + req.headers.host + req.url);
-});
+if (config.https) {
+	app.use (function (req, res, next) {
+		if (req.secure) 
+			next();
+		else			
+			res.redirect('https://' + req.headers.host + req.url);
+	});
+}
 
 app.use (morgan ('route', { skip: function (req, res) { return (req.method == 'OPTIONS'); } }));
 
