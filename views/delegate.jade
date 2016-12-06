@@ -1,0 +1,74 @@
+div.row
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Rank
+				br
+				span= delegateobj.rate
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Approval
+				br
+				span= delegateobj.approval
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Productivity
+				br
+				span= delegateobj.productivity
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Forged blocks
+				br
+				span= delegateobj.producedblocks
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Missed blocks
+				br
+				span= delegateobj.missedblocks
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Alive
+				br
+				span
+					if alive == true
+						span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
+					else
+						span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Balance
+				br
+				span= balance
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Forged
+				br
+				span= forged
+
+	div.col-md-2
+		div.panel.panel-success
+			div.panel-heading
+				span Blocks to forge
+				br
+				each d in turns
+					if d.delegate == delegate
+						span= d.blocks
+						br
+						if d.avgtime <= 60
+							span= d.avgtime + ' sec'
+						else
+							span= Math.floor (d.avgtime / 60) + ' min and ' + (d.avgtime % 60) + ' sec'

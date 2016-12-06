@@ -428,6 +428,27 @@ router.get('/', checkLogin, function (req, res) {
 	res.render ('index', { coin: config.coin, all: config.all }); 
 });
 
+router.get('/delegate/:name', checkLogin, function (req, res) {
+	var delegate = req.params.name;
+	res.render ('indexdelegate', { coin: config.coin, all: config.all, delegate: delegate });
+});
+
+router.get('/delegate/:name/stats', checkLogin, function (req, res) {
+	var delegate = req.params.name;
+	var delegateobj = delegatesDict [delegate];
+
+	res.render ('delegate', { 
+		coin: config.coin, 
+		all: config.all, 
+		delegate: delegate,
+		delegateobj: delegateobj,
+		balance: balances[delegateobj.address],
+		forged: forged[delegateobj.address],
+		alive: alive[delegateobj.address],
+		turns: turns
+	});
+});
+
 router.get('/stats', checkLogin, function (req, res) {
 	res.render ('stats', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });

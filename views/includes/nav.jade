@@ -14,5 +14,11 @@ nav.navbar.navbar-default
 					
 		div.navbar-collapse.collapse(id="navbar")
 			ul.nav.navbar-nav
-				li.active
-					a(href="/") Home
+				if !delegate
+					li.active
+						a(href="") Home
+				else
+					li
+						a(href="/", id="homelink") Home
+					li.active
+						a(href="")= delegate
