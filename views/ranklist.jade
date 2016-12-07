@@ -12,7 +12,8 @@ table.table.table-striped.table-condensed.table-hover
 				each d in delegates
 					tr
 						td= d.rate
-						td= d.username
+						td
+							a(onclick="delegateClick('"+d.username+"')")= d.username
 						td= d.productivity
 						td= d.approval
 						td
@@ -34,7 +35,8 @@ table.table.table-striped.table-condensed.table-hover
 				each d in outsides
 					tr
 						td= d.rate
-						td= d.username
+						td
+							a(onclick="delegateClick('"+d.username+"')")= d.username
 						td= d.productivity
 						td= d.approval
 						td

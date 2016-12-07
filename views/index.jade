@@ -108,3 +108,7 @@ html
 				$("#votes").load("/votes?key=" + getUrlParameter ('key'));
 				$("#donations").load("/donations?key=" + getUrlParameter ('key'));
 			}, 90000);
+
+			function delegateClick (dn) {
+				window.location = '/delegate/'+dn+'?key='+ getUrlParameter ('key');
+			}

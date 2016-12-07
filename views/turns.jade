@@ -11,7 +11,8 @@ table.table.table-striped.table-condensed.table-hover
 
 	each d in turns
 		tr
-			td= d.delegate 
+			td
+				a(onclick="delegateClick('"+d.delegate+"')")= d.delegate
 			td
 				if d.blocks == 0
 					span(style="color: #009900")
