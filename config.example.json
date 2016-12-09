@@ -2,7 +2,6 @@
 	"coin": "LSK",
 	"port": 9090,
 	"node": "localhost:8000",
-	"nodewithdelegatelist": "wallet.lisk.4miners.net",
 	"telegram": {
 		"token": "",
 		"chatids": [1234, 124324],

@@ -281,7 +281,7 @@ exports.update = function () {
 			stats = stats2;
 			log.debug ('Data', 'Data updated.');
 
-			request('https://' + config.nodewithdelegatelist + '/api/delegates/getNextForgers?limit=101', next)
+			request('https://' + config.node + '/api/delegates/getNextForgers?limit=101', next)
 		},
 		function (err, response, body) {
 			var data = JSON.parse(body);
