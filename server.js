@@ -37,7 +37,7 @@ setTimeout (controllers.updateDonations, 10000);
 setInterval (controllers.updateDonations, 1200000);
 
 setTimeout (controllers.updatePersonalStats, 10000);
-setInterval (controllers.updatePersonalStats, 600000);
+setInterval (controllers.updatePersonalStats, 60000);
 
 
 /* Server */

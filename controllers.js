@@ -450,7 +450,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Today', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+							{ text: 'Today', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'days').unix () + '&end=' + moment().unix (), next);
@@ -461,7 +461,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'weeks').unix () + '&end=' + moment().unix (), next);
@@ -472,7 +472,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'months').unix () + '&end=' + moment().unix (), next);
@@ -483,7 +483,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, next);
@@ -494,7 +494,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'All time', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+							{ text: 'All time', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
 					}
 
