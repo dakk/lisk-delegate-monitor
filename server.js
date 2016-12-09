@@ -19,9 +19,6 @@ process.on('uncaughtException', function (err) {
 	console.log ('Except', err.stack);
 });
 
-
-
-
 /* Start the update loop */
 controllers.update ();
 setInterval (controllers.update, 14000);
