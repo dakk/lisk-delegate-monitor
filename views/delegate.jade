@@ -76,13 +76,6 @@ div.row
 				br
 				h3= forged
 
-	div.col-md-12
-		div.panel.panel-default
-			div.panel-heading
-				b Voters
-				br
-				each v in stats.votes
-					span= v + ' '
 			
 
 table.table.table-striped.table-condensed.table-hover
@@ -101,3 +94,11 @@ table.table.table-striped.table-condensed.table-hover
 				td= period.btc
 				td= period.usd
 				td= period.eur
+
+div
+		div.panel.panel-default
+			div.panel-heading
+				b Voters
+				br
+				each v in stats.votes
+					span= v + ' '

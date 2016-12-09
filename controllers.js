@@ -1,12 +1,12 @@
 "use strict";
 
 const express		= require ('express');
-const request     = require ('request');
-const TelegramBot = require ('node-telegram-bot-api');
+const request     	= require ('request');
+const TelegramBot 	= require ('node-telegram-bot-api');
 const fs 			= require ('fs');
-const waterfall	= require ('waterfall-ya');
-
-var log			= require ('./log');
+const waterfall		= require ('waterfall-ya');
+const moment 		= require ('moment');
+var log				= require ('./log');
 
 if (process.argv.length >= 3)
 	var config      = require ('./' + process.argv[2]);
@@ -430,7 +430,7 @@ exports.updatePersonalStats = function () {
 
 			waterfall ([
 				function (next) {
-					request ('http://' + config.node + '/api/accounts/delegates/?address=2324852447570841050L', next);
+					request ('http://' + config.node + '/api/accounts/delegates/?address=' + deleg.address, next);
 				},
 				function (error, response, body, next) {
 					if (!error && response.statusCode == 200) {
@@ -441,22 +441,66 @@ exports.updatePersonalStats = function () {
 							delegatesStats[deleg.username].votes.push (data.delegates[i].username);
 						}
 					}
-					console.log (delegatesStats[deleg.username]);
+
+					delegatesStats[deleg.username].periods = [];
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment (moment().format('YYYY-MM-DD')).unix () + '&end=' + moment().unix (), next);
+				},
+				// Today
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].periods.push ( 
+							{ text: 'Today', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+						);
+					}
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'days').unix () + '&end=' + moment().unix (), next);
+				},
+				// 24h
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].periods.push ( 
+							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+						);
+					}
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'weeks').unix () + '&end=' + moment().unix (), next);
+				},
+				// 7days
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].periods.push ( 
+							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+						);
+					}
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'months').unix () + '&end=' + moment().unix (), next);
+				},
+				// 1month
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].periods.push ( 
+							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+						);
+					}
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, next);
+				},
+				// All time
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].periods.push ( 
+							{ text: 'All time', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
+						);
+					}
 					resolve ();
 				}
 			]);
-
-			//delegatesStats
-			// get votes 
-			// get today, last24, last7days, lastmonth, alltime
-			/*request ('http://' + config.node + '/api/accounts?address=' + deleg.address, function (error, response, body) {
-				if (!error && response.statusCode == 200) {
-					var data = JSON.parse(body);
-					balances [deleg.address] = data.account.balance / 100000000;
-				}
-
-				resolve ();
-			});*/
 		});
 	};
 
