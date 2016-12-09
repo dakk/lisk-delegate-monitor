@@ -425,8 +425,7 @@ exports.updatePersonalStats = function () {
 
 	var promiseFactory = function (deleg) {
 		return new Promise ((resolve, reject) => {
-			if (!delegatesStats[deleg.username])
-				delegatesStats[deleg.username] = { votes: [], periods: [] };
+			var delegatesStats2 = { votes: [], periods: [] };
 
 			waterfall ([
 				function (next) {
@@ -436,13 +435,13 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].votes = [];
+						delegatesStats2.votes = [];
 						for (var i = 0; i < data.delegates.length; i++) {
-							delegatesStats[deleg.username].votes.push (data.delegates[i].username);
+							delegatesStats2.votes.push (data.delegates[i].username);
 						}
 					}
 
-					delegatesStats[deleg.username].periods = [];
+					delegatesStats2.periods = [];
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment (moment().format('YYYY-MM-DD')).unix () + '&end=' + moment().unix (), next);
 				},
 				// Today
@@ -450,7 +449,7 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].periods.push ( 
+						delegatesStats2.periods.push ( 
 							{ text: 'Today', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
 						);
 					}
@@ -461,7 +460,7 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].periods.push ( 
+						delegatesStats2.periods.push ( 
 							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
 						);
 					}
@@ -472,7 +471,7 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].periods.push ( 
+						delegatesStats2.periods.push ( 
 							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
 						);
 					}
@@ -483,7 +482,7 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].periods.push ( 
+						delegatesStats2.periods.push ( 
 							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
 						);
 					}
@@ -494,10 +493,12 @@ exports.updatePersonalStats = function () {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
-						delegatesStats[deleg.username].periods.push ( 
+						delegatesStats2.periods.push ( 
 							{ text: 'All time', lsk: data.forged / 100000000, eur: 0, btc: 0, usd: 0 }
 						);
 					}
+
+					delegatesStats[deleg.username] = delegatesStats2;
 					resolve ();
 				}
 			]);
