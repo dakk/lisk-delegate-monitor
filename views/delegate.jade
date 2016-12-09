@@ -1,39 +1,38 @@
-br
 div.row
 	div.col-md-2
 		div.panel.panel-success
 			div.panel-heading
 				span Rank
 				br
-				h1= delegateobj.rate
+				h3= delegateobj.rate
 
 	div.col-md-2
 		div.panel.panel-success
 			div.panel-heading
 				span Approval
 				br
-				h1= delegateobj.approval
+				h3= delegateobj.approval
 
 	div.col-md-2
 		div.panel.panel-success
 			div.panel-heading
 				span Productivity
 				br
-				h1= delegateobj.productivity
+				h3= delegateobj.productivity
 
 	div.col-md-2
 		div.panel.panel-danger
 			div.panel-heading
 				span Forged blocks
 				br
-				h1= delegateobj.producedblocks
+				h3= delegateobj.producedblocks
 
 	div.col-md-2
 		div.panel.panel-danger
 			div.panel-heading
 				span Missed blocks
 				br
-				h1= delegateobj.missedblocks
+				h3= delegateobj.missedblocks
 
 	div.col-md-2
 		div.panel.panel-info
@@ -42,9 +41,9 @@ div.row
 				br
 				span
 					if alive == true
-						h1 Yes
+						h3 Yes
 					else
-						h1 No
+						h3 No
 
 	div.col-md-3
 		div.panel.panel-warning
@@ -70,11 +69,35 @@ div.row
 							else
 								span= Math.floor (d.avgtime / 60) + ' min and ' + (d.avgtime % 60) + ' sec)'
 
-
 	div.col-md-3
 		div.panel.panel-warning
 			div.panel-heading
 				span Forged
 				br
 				h3= forged
-br
+
+	div.col-md-12
+		div.panel.panel-default
+			div.panel-heading
+				b Voters
+				br
+				each v in stats.votes
+					span= v + ' '
+			
+
+table.table.table-striped.table-condensed.table-hover
+	thead
+		tr 
+			th Period
+			th Forged LSK
+			th Forged BTC
+			th Forged USD
+			th Forged EUR
+	tbody
+		each period in stats.periods
+			tr
+				td= period.text
+				td= period.lsk
+				td= period.btc
+				td= period.usd
+				td= period.eur

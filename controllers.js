@@ -33,6 +33,7 @@ var pubkeys = {};
 var turns = [];
 var delegatesDict = {};
 var donationVotes = [];
+var delegatesStats = {};
 
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
@@ -281,9 +282,12 @@ exports.update = function () {
 			stats = stats2;
 			log.debug ('Data', 'Data updated.');
 
-			request('https://' + config.node + '/api/delegates/getNextForgers?limit=101', next)
+			request('http://' + config.node + '/api/delegates/getNextForgers?limit=101', next)
 		},
 		function (err, response, body) {
+			if (err || response.statusCode != 200) 
+				return log.critical ('Data', 'Failed to download next forgers from node.');
+
 			var data = JSON.parse(body);
 
 			turns = [];
@@ -414,6 +418,56 @@ exports.updateDonations = function () {
 };
 
 
+
+exports.updatePersonalStats = function () {
+	log.debug ('Data', 'Updating personal stats data...');
+	var promises = [];
+
+	var promiseFactory = function (deleg) {
+		return new Promise ((resolve, reject) => {
+			if (!delegatesStats[deleg.username])
+				delegatesStats[deleg.username] = { votes: [], periods: [] };
+
+			waterfall ([
+				function (next) {
+					request ('http://' + config.node + '/api/accounts/delegates/?address=2324852447570841050L', next);
+				},
+				function (error, response, body, next) {
+					if (!error && response.statusCode == 200) {
+						var data = JSON.parse(body);
+
+						delegatesStats[deleg.username].votes = [];
+						for (var i = 0; i < data.delegates.length; i++) {
+							delegatesStats[deleg.username].votes.push (data.delegates[i].username);
+						}
+					}
+					console.log (delegatesStats[deleg.username]);
+					resolve ();
+				}
+			]);
+
+			//delegatesStats
+			// get votes 
+			// get today, last24, last7days, lastmonth, alltime
+			/*request ('http://' + config.node + '/api/accounts?address=' + deleg.address, function (error, response, body) {
+				if (!error && response.statusCode == 200) {
+					var data = JSON.parse(body);
+					balances [deleg.address] = data.account.balance / 100000000;
+				}
+
+				resolve ();
+			});*/
+		});
+	};
+
+	for (let i = 0; i < delegateList.length; i++)
+		promises.push (promiseFactory (delegateList[i]));
+
+	Promise.all (promises).then (() => {
+	});
+};
+
+
 /** Routes */
 var router = express.Router();
 
@@ -445,7 +499,8 @@ router.get('/delegate/:name/stats', checkLogin, function (req, res) {
 		balance: balances[delegateobj.address],
 		forged: forged[delegateobj.address],
 		alive: alive[delegateobj.address],
-		turns: turns
+		turns: turns,
+		stats: delegatesStats[delegateobj.username] || { votes: [], periods: [] }
 	});
 });
 
