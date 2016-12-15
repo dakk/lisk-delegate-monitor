@@ -308,12 +308,17 @@ exports.updateVotes = function () {
 	var votes2 = [];
 
 	var dlist = delegateList.concat (outsideList);
+	var vlist = config.voters || []; 
 
 	/* First row is the username row */
 	var row = ['//'];
 	for (var i = 0; i < dlist.length; i++) {
 		row.push (dlist[i].username);
 	}
+	for (var j = 0; j < vlist.length; j++) {
+		row.push (vlist[j]);
+	}
+
 	votes2.push (row);
 
 
@@ -327,7 +332,7 @@ exports.updateVotes = function () {
 
 			var d = dlist[i];
 			
-			request ('http://' + config.node + '/api/accounts/delegates/?address=' + d.address, function (error, response, body) {
+			request ('http://' + config.node + '/api/delegates/voters/?publicKey=' + d.publicKey, function (error, response, body) {
 				var rrow = [d.username];
 
 				if (error || response.statusCode != 200)
@@ -337,8 +342,19 @@ exports.updateVotes = function () {
 
 				for (var j = 0; j < dlist.length; j++) {
 					var r = false;
-					for (var z = 0; z < data.delegates.length; z++) {
-						if (data.delegates[z].address == dlist[j].address) {
+					for (var z = 0; z < data.accounts.length; z++) {
+						if (data.accounts[z].address == dlist[j].address) {
+							r = true;
+							break;
+						}		
+					}
+					rrow.push (r);
+				}
+
+				for (var j = 0; j < vlist.length; j++) {
+					var r = false;
+					for (var z = 0; z < data.accounts.length; z++) {
+						if (data.accounts[z].address == vlist[j]) {
 							r = true;
 							break;
 						}		
@@ -351,7 +367,12 @@ exports.updateVotes = function () {
 			});
 		},
 		function () {
-			votes = votes2;
+			var votes3 = votes2[0].map(function(col, i) { 
+				return votes2.map(function(row) { 
+					return row[i];
+				})
+			});
+			votes = votes3;
 			log.debug ('Data', 'Votes updated.');
 		}
 	]);
