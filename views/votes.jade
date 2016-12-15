@@ -8,9 +8,6 @@ if !all
 							span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
 						if cell == false
 							span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
-						if cell != false && cell != true && row.indexOf (cell) != 0
-							div(style="-webkit-transform: rotate(-90deg);-moz-transform: rotate(-90deg);margin-bottom:15px")= cell
-						if cell != false && cell != true && row.indexOf (cell) == 0
-							div= cell
-						
+						if cell != false && cell != true
+							span= cell
 								
