@@ -442,6 +442,7 @@ exports.updatePersonalStats = function () {
 					}
 
 					delegatesStats2.periods = [];
+					/*
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment (moment().format('YYYY-MM-DD')).unix () + '&end=' + moment().unix (), next);
 				},
 				// Today
@@ -485,7 +486,7 @@ exports.updatePersonalStats = function () {
 						delegatesStats2.periods.push ( 
 							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
 						);
-					}
+					}*/
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, next);
 				},
 				// All time
