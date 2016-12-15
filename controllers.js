@@ -429,15 +429,15 @@ exports.updatePersonalStats = function () {
 
 			waterfall ([
 				function (next) {
-					request ('http://' + config.node + '/api/accounts/delegates/?address=' + deleg.address, next);
+					request ('http://' + config.node + '/api/delegates/voters/?publicKey=' + deleg.publicKey, next);
 				},
 				function (error, response, body, next) {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
 						delegatesStats2.votes = [];
-						for (var i = 0; i < data.delegates.length; i++) {
-							delegatesStats2.votes.push (data.delegates[i].username);
+						for (var i = 0; i < data.accounts.length; i++) {
+							delegatesStats2.votes.push (data.accounts[i].username || data.accounts[i].address);
 						}
 					}
 
