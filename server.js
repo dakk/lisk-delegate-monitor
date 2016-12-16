@@ -36,6 +36,9 @@ setInterval (controllers.updateDonations, 1200000);
 setTimeout (controllers.updatePersonalStats, 10000);
 setInterval (controllers.updatePersonalStats, 60000);
 
+controllers.updatePrices ();
+setInterval (controllers.updatePrices, 120000);
+
 
 /* Server */
 var app = express ();

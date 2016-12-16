@@ -14,6 +14,10 @@ else
 	var config      = require ('./config.json');
 
 
+var price_usd = 1;
+var price_btc = 1;
+var price_eur = 1;
+
 var delegateList = [];
 var outsideList = [];
 
@@ -302,6 +306,15 @@ exports.update = function () {
 };
 
 
+exports.updatePrices = function () {
+	log.debug ('Data', 'Updating prices...');
+	request ('https://api.coinmarketcap.com/v1/ticker/lisk/', function (error, response, body) {
+		var data = JSON.parse(body);
+		price_usd = data[0].price_usd;
+		price_btc = data[0].price_btc;
+		price_eur = data[0].price_usd * 0.956937799;
+	});
+};
 
 exports.updateVotes = function () {
 	log.debug ('Data', 'Updating votes data...');
@@ -458,12 +471,13 @@ exports.updatePersonalStats = function () {
 
 						delegatesStats2.votes = [];
 						for (var i = 0; i < data.accounts.length; i++) {
-							delegatesStats2.votes.push (data.accounts[i].username || data.accounts[i].address);
+							if (data.accounts[i].username != null)
+								delegatesStats2.votes.push (data.accounts[i].username);
 						}
 					}
 
 					delegatesStats2.periods = [];
-					/*
+					
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment (moment().format('YYYY-MM-DD')).unix () + '&end=' + moment().unix (), next);
 				},
 				// Today
@@ -472,7 +486,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Today', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
+							{ text: 'Today', lsk: data.forged / 100000000, eur: data.forged / 100000000 * price_eur, btc: data.forged / 100000000 * price_btc, usd: data.forged / 100000000 * price_usd }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'days').unix () + '&end=' + moment().unix (), next);
@@ -483,7 +497,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
+							{ text: 'Last 24h', lsk: data.forged / 100000000, eur: data.forged / 100000000 * price_eur, btc: data.forged / 100000000 * price_btc, usd: data.forged / 100000000 * price_usd }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'weeks').unix () + '&end=' + moment().unix (), next);
@@ -494,7 +508,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
+							{ text: 'Last 7 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * price_eur, btc: data.forged / 100000000 * price_btc, usd: data.forged / 100000000 * price_usd }
 						);
 					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'months').unix () + '&end=' + moment().unix (), next);
@@ -505,9 +519,9 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
+							{ text: 'Last 30 days', lsk: data.forged / 100000000, eur: data.forged / 100000000 * price_eur, btc: data.forged / 100000000 * price_btc, usd: data.forged / 100000000 * price_usd }
 						);
-					}*/
+					}
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, next);
 				},
 				// All time
@@ -516,7 +530,7 @@ exports.updatePersonalStats = function () {
 						var data = JSON.parse(body);
 
 						delegatesStats2.periods.push ( 
-							{ text: 'All time', lsk: data.forged / 100000000, eur: data.forged / 100000000 * 0.00018346 * 741, btc: data.forged / 100000000 * 0.00018346, usd: data.forged / 100000000 * 0.00018346 * 771 }
+							{ text: 'All time', lsk: data.forged / 100000000, eur: data.forged / 100000000 * price_eur, btc: data.forged / 100000000 * price_btc, usd: data.forged / 100000000 * price_usd }
 						);
 					}
 
