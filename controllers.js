@@ -6,7 +6,9 @@ const TelegramBot 	= require ('node-telegram-bot-api');
 const fs 			= require ('fs');
 const waterfall		= require ('waterfall-ya');
 const moment 		= require ('moment');
-var log				= require ('./log');
+const log			= require ('./log');
+const lisk 			= require ('liskapi');
+
 
 if (process.argv.length >= 3)
 	var config      = require ('./' + process.argv[2]);
@@ -42,10 +44,10 @@ var delegatesStats = {};
 /* Delegate monitor for PVT monitoring */
 var delegateMonitor = {};
 
-var saveDelegateMonitor = function () {
-	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), function (err,data) {});
+var saveDelegateMonitor = () => {
+	fs.writeFile('monitor.json', JSON.stringify (delegateMonitor), (err,data) => {});
 };
-var loadDelegateMonitor = function () {
+var loadDelegateMonitor = () => {
 	try {
 		return JSON.parse (fs.readFileSync('monitor.json', 'utf8'));
 	} catch (e) {
@@ -62,17 +64,17 @@ if (config.telegram.enabled) {
 	var bot = new TelegramBot (config.telegram.token, {polling: true});
 	var botHelp = 'Type:\n\t/stats\n\t/table\n\t/reds\n\t/watch delegatename\n\t/unwatch delegatename\n\t/watched';
 
-	bot.onText(/\/help/, function (msg) {
+	bot.onText(/\/help/, (msg) => {
 		var fromId = msg.from.id;
 		bot.sendMessage(fromId, botHelp);
 	});
 
-	bot.onText(/\/start/, function (msg) {
+	bot.onText(/\/start/, (msg) => {
 		var fromId = msg.from.id;
 		bot.sendMessage(fromId, botHelp);
 	});
 
-	bot.onText(/\/watch (.+)/, function (msg, match) {
+	bot.onText(/\/watch (.+)/, (msg, match) => {
 		var fromId = msg.from.id;
 		var delegate = match[1];
 
@@ -93,7 +95,7 @@ if (config.telegram.enabled) {
 	});
 
 
-	bot.onText(/\/unwatch (.+)/, function (msg, match) {
+	bot.onText(/\/unwatch (.+)/, (msg, match) => {
 		var fromId = msg.from.id;
 		var delegate = match[1];
 
@@ -110,7 +112,7 @@ if (config.telegram.enabled) {
 	});
 
 
-	bot.onText(/\/watched/, function (msg) {
+	bot.onText(/\/watched/, (msg) => {
 		var fromId = msg.from.id;
 		
 		var message = "You are monitoring:\n";
@@ -122,7 +124,7 @@ if (config.telegram.enabled) {
 		bot.sendMessage(fromId, message);
 	});
 
-	bot.onText(/\/turns/, function (msg) {
+	bot.onText(/\/turns/, (msg) => {
 		var fromId = msg.from.id;
 		var turnss = 'Turns:\n';
 		for (var i = 0; i < turns.length; i++) {
@@ -131,12 +133,12 @@ if (config.telegram.enabled) {
 		bot.sendMessage(fromId, turnss);
 	});
 
-	bot.onText(/\/stats/, function (msg) {
+	bot.onText(/\/stats/, (msg) => {
 		var fromId = msg.from.id;
 		bot.sendMessage(fromId, 'Delegates: ' + stats.delegates + ', Mined blocks: ' + stats.mined + ', Total shifts: ' + stats.shift + ', Red delegates: ' + stats.notalive);
 	});
 
-	bot.onText(/\/table/, function (msg) {
+	bot.onText(/\/table/, (msg) => {
 		var fromId = msg.from.id;
 
 		var str = "";
@@ -155,17 +157,17 @@ if (config.telegram.enabled) {
 }
 
 /** Data update */
-exports.update = function () {
+exports.update = () => {
 	log.debug ('Data', 'Updating data...');
 
 	var delegateList2 = [];
 	var stats2 = { delegates: 0, mined: 0, shift: 0, minedshift: 0 };
 
 	waterfall([
-		function (next) {
+		(next) => {
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=0&orderBy=rate:asc', next);
 		},
-		function (error, response, body, next) {
+		(error, response, body, next) => {
 			if (error || response.statusCode != 200)
 				return log.critical ('Data', 'Failed to download delegate list from node.');
 
@@ -189,14 +191,14 @@ exports.update = function () {
 
 			request('http://' + config.node + '/api/blocks?limit=100&orderBy=height:desc', next);
 		},
-		function (error, response, body, next) {
+		(error, response, body, next) => {
 			if (error || response.statusCode != 200)
 				return log.critical ('Data', 'Failed to download block list from node.');
 
 			var data = JSON.parse(body);
 			request('http://' + config.node + '/api/blocks?limit=100&offset=100&orderBy=height:desc', next.bind (null, data));
 		},
-		function (data, error, response, body, next) {
+		(data, error, response, body, next) => {
 			if (error || response.statusCode != 200)
 				return log.critical ('Data', 'Failed to download block list from node.');
 
@@ -288,7 +290,7 @@ exports.update = function () {
 
 			request('http://' + config.node + '/api/delegates/getNextForgers?limit=101', next)
 		},
-		function (err, response, body) {
+		(err, response, body) => {
 			if (err || response.statusCode != 200) 
 				return log.critical ('Data', 'Failed to download next forgers from node.');
 
@@ -306,9 +308,13 @@ exports.update = function () {
 };
 
 
-exports.updatePrices = function () {
+exports.updatePrices = () => {
 	log.debug ('Data', 'Updating prices...');
-	request ('https://api.coinmarketcap.com/v1/ticker/lisk/', function (error, response, body) {
+
+	let c = 'lisk';
+	if (config.coin == 'SHIFT') c = 'shift';
+
+	request ('https://api.coinmarketcap.com/v1/ticker/' + c + '/', (error, response, body) => {
 		var data = JSON.parse(body);
 		price_usd = data[0].price_usd;
 		price_btc = data[0].price_btc;
@@ -316,7 +322,7 @@ exports.updatePrices = function () {
 	});
 };
 
-exports.updateVotes = function () {
+exports.updateVotes = () => {
 	log.debug ('Data', 'Updating votes data...');
 	var votes2 = [];
 
@@ -336,16 +342,16 @@ exports.updateVotes = function () {
 
 
 	waterfall ([
-		function (next) {
+		(next) => {
 			next (0, next);
 		},
-		function (i, current, next) {
+		(i, current, next) => {
 			if (i >= dlist.length)
 				return next ();
 
 			var d = dlist[i];
 			
-			request ('http://' + config.node + '/api/delegates/voters/?publicKey=' + d.publicKey, function (error, response, body) {
+			request ('http://' + config.node + '/api/delegates/voters/?publicKey=' + d.publicKey, (error, response, body) => {
 				var rrow = [d.username];
 
 				if (error || response.statusCode != 200)
@@ -379,9 +385,9 @@ exports.updateVotes = function () {
 				return current (i+1, current);
 			});
 		},
-		function () {
-			var votes3 = votes2[0].map(function(col, i) { 
-				return votes2.map(function(row) { 
+		() => {
+			var votes3 = votes2[0].map((col, i) => { 
+				return votes2.map((row) => { 
 					return row[i];
 				})
 			});
@@ -391,23 +397,23 @@ exports.updateVotes = function () {
 	]);
 };
 
-exports.updateBalances = function () {
+exports.updateBalances = () => {
 	log.debug ('Data', 'Updating balance data...');
 	var promises = [];
 
-	var promiseFactory = function (deleg, isAddr) {
+	var promiseFactory = (deleg, isAddr) => {
 		if (isAddr) 
 			deleg = { address: deleg };
 
 		return new Promise ((resolve, reject) => {
-			request ('http://' + config.node + '/api/accounts?address=' + deleg.address, function (error, response, body) {
+			request ('http://' + config.node + '/api/accounts?address=' + deleg.address, (error, response, body) => {
 				if (!error && response.statusCode == 200) {
 					var data = JSON.parse(body);
 					balances [deleg.address] = data.account.balance / 100000000;
 				}
 
 				if (!isAddr) {
-					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, function (error, response, body) {
+					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, (error, response, body) => {
 						if (!error && response.statusCode == 200) {
 							var data = JSON.parse(body);
 							forged [deleg.address] = data.forged / 100000000;
@@ -438,8 +444,8 @@ exports.updateBalances = function () {
 };
 
 
-exports.updateDonations = function () {
-	request ('http://' + config.node + '/api/accounts/delegates/?address=2324852447570841050L', function (error, response, body) {
+exports.updateDonations = () => {
+	request ('http://' + config.node + '/api/accounts/delegates/?address=2324852447570841050L', (error, response, body) => {
 		if (!error && response.statusCode == 200) {
 			var data = JSON.parse(body);
 
@@ -453,19 +459,19 @@ exports.updateDonations = function () {
 
 
 
-exports.updatePersonalStats = function () {
+exports.updatePersonalStats = () => {
 	log.debug ('Data', 'Updating personal stats data...');
 	var promises = [];
 
-	var promiseFactory = function (deleg) {
+	var promiseFactory = (deleg) => {
 		return new Promise ((resolve, reject) => {
 			var delegatesStats2 = { votes: [], periods: [] };
 
 			waterfall ([
-				function (next) {
+				(next) => {
 					request ('http://' + config.node + '/api/delegates/voters/?publicKey=' + deleg.publicKey, next);
 				},
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -481,7 +487,7 @@ exports.updatePersonalStats = function () {
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment (moment().format('YYYY-MM-DD')).unix () + '&end=' + moment().unix (), next);
 				},
 				// Today
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -492,7 +498,7 @@ exports.updatePersonalStats = function () {
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'days').unix () + '&end=' + moment().unix (), next);
 				},
 				// 24h
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -503,7 +509,7 @@ exports.updatePersonalStats = function () {
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'weeks').unix () + '&end=' + moment().unix (), next);
 				},
 				// 7days
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -514,7 +520,7 @@ exports.updatePersonalStats = function () {
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey + '&start=' + moment().subtract (1, 'months').unix () + '&end=' + moment().unix (), next);
 				},
 				// 1month
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -525,7 +531,7 @@ exports.updatePersonalStats = function () {
 					request ('http://' + config.node + '/api/delegates/forging/getForgedByAccount?generatorPublicKey=' + deleg.publicKey, next);
 				},
 				// All time
-				function (error, response, body, next) {
+				(error, response, body, next) => {
 					if (!error && response.statusCode == 200) {
 						var data = JSON.parse(body);
 
@@ -552,23 +558,23 @@ exports.updatePersonalStats = function () {
 /** Routes */
 var router = express.Router();
 
-var checkLogin = function (req, res, next) {
+var checkLogin = (req, res, next) => {
 	if (!config.accesskey || ('key' in req.query && req.query.key == config.accesskey))
 		next ();
 	else
 		res.status(500);
 };
 
-router.get('/', checkLogin, function (req, res) {
+router.get('/', checkLogin, (req, res) => {
 	res.render ('index', { coin: config.coin, all: config.all }); 
 });
 
-router.get('/delegate/:name', checkLogin, function (req, res) {
+router.get('/delegate/:name', checkLogin, (req, res) => {
 	var delegate = req.params.name;
 	res.render ('indexdelegate', { coin: config.coin, all: config.all, delegate: delegate });
 });
 
-router.get('/delegate/:name/stats', checkLogin, function (req, res) {
+router.get('/delegate/:name/stats', checkLogin, (req, res) => {
 	var delegate = req.params.name;
 	var delegateobj = delegatesDict [delegate];
 
@@ -585,23 +591,23 @@ router.get('/delegate/:name/stats', checkLogin, function (req, res) {
 	});
 });
 
-router.get('/stats', checkLogin, function (req, res) {
+router.get('/stats', checkLogin, (req, res) => {
 	res.render ('stats', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
-router.get('/votes', checkLogin, function (req, res) {
+router.get('/votes', checkLogin, (req, res) => {
 	res.render ('votes', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
-router.get('/turns', checkLogin, function (req, res) {
+router.get('/turns', checkLogin, (req, res) => {
 	res.render ('turns', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
-router.get('/ranklist', checkLogin, function (req, res) {
+router.get('/ranklist', checkLogin, (req, res) => {
 	res.render ('ranklist', { all: config.all || false, delegatesDict: delegatesDict, turns: turns, height: height, forged: forged, coin: config.coin, addresses: config.addresses, delegates: delegateList, stats: stats, balances: balances, votes: votes, alive: alive, outsides: outsideList });
 });
 
-router.get('/donations', checkLogin, function (req, res) {
+router.get('/donations', checkLogin, (req, res) => {
 	res.render ('donations', { all: config.all || false, donationVotes: donationVotes });
 });
 
