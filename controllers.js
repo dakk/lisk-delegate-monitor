@@ -243,7 +243,6 @@ exports.update = () => {
 					delete alerted [delegateList2[i].address];
 				}
 			}
-/*
 			request('http://' + config.node + '/api/delegates/?limit=101&offset=101&orderBy=rate:asc', next);
 		},
 		function (error, response, body, next) {
@@ -281,8 +280,7 @@ exports.update = () => {
 				}
 			}
 
-*/
-			outsideList = []; //outsideList2;
+			outsideList = outsideList2;
 			stats2.outsides = outsideList.length;
 			delegateList = delegateList2;
 			stats = stats2;
