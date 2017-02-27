@@ -1,14 +1,21 @@
 if !all
 	div(style="overflow-x: scroll; height: 100%; width: 100%")
-		table.table.table-striped.table-responsive.table-condensed.table-hover
-			each row in votes
+		table.table-striped.table-responsive.table-condensed.table-hover
+			thead
 				tr
-					each cell in row
-						td(align="center")
-							if cell == true
-								span(style="color: #009900").glyphicon.text-primary.glyphicon-ok
-							if cell == false
-								span(style="color: #990000").glyphicon.text-primary.glyphicon-remove
-							if cell != false && cell != true
-								span= cell
+					each cell in votes[0]
+						th(align="center")= cell
+					
+			tbody
+				each row, i in votes
+					if i != 0
+						tr
+							each cell, j in row
+								td(align="center")
+									if cell == true
+										a.vote(style="color: #009900", data-toggle="tooltip", title="#{row[0]} → #{votes[0][j]}").glyphicon.text-primary.glyphicon-ok
+									if cell == false
+										a.vote(style="color: #990000", data-toggle="tooltip", title="#{row[0]} → #{votes[0][j]}").glyphicon.text-primary.glyphicon-remove
+									if j == 0
+										span= cell
 								
